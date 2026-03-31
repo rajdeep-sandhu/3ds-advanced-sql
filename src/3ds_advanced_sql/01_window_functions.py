@@ -11,7 +11,7 @@ def _():
     import psycopg
     import sqlalchemy
 
-    return os, sqlalchemy
+    return mo, os, sqlalchemy
 
 
 @app.cell
@@ -24,6 +24,17 @@ def _(os, sqlalchemy):
     # postgresql to use psycopg2, posgresql+psycopg to use psycopg3
     DATABASE_URL = f"postgresql+psycopg://{_username}:{_password}@db:5432/{_database}"
     engine = sqlalchemy.create_engine(DATABASE_URL)
+    return (engine,)
+
+
+@app.cell
+def _(engine, mo):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM information_schema.tables;
+        """,
+        engine=engine
+    )
     return
 
 
