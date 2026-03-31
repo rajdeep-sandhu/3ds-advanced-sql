@@ -31,6 +31,17 @@ def _(os, sqlalchemy):
 def _(engine, mo):
     _df = mo.sql(
         f"""
+        SELECT VERSION();
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(engine, mo):
+    _df = mo.sql(
+        f"""
         SELECT * FROM information_schema.tables;
         """,
         engine=engine
