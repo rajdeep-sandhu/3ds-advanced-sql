@@ -4,6 +4,22 @@ __generated_with = "0.21.1"
 app = marimo.App(width="full", app_title="01_window_functions")
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # 01. Window Functions
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Setup and Connection
+    """)
+    return
+
+
 @app.cell
 def _():
     import marimo as mo
