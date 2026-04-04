@@ -26,7 +26,7 @@ def _():
     import os
     import psycopg
     import sqlalchemy
-    from postgres_factory import PostgresFactory
+    from advanced_sql.postgres_factory import PostgresFactory
 
     return PostgresFactory, mo
 
