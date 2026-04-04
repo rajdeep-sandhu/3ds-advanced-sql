@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.14"
 dependencies = [
-    "marimo[recommended]>=0.21.1",
+    "marimo[recommended]>=0.22.4",
     "psycopg[binary]>=3.3.3",
     "sqlalchemy>=2.0.48",
 ]
