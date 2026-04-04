@@ -9,6 +9,8 @@ ENV PYTHONUNBUFFERED 1
 
 # Install additional OS packages, e.g. psql
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends postgresql-client
+    && apt-get -y install --no-install-recommends postgresql-client git-lfs
+
+RUN git lfs install
 
 RUN pipx install uv
