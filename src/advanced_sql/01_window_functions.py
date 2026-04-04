@@ -3,9 +3,16 @@ import marimo
 __generated_with = "0.21.1"
 app = marimo.App(width="full", app_title="01_window_functions")
 
+with app.setup:
+    import marimo as mo
+    import os
+    import psycopg
+    import sqlalchemy
+    from advanced_sql.postgres_factory import PostgresFactory
+
 
 @app.cell(hide_code=True)
-def _(mo):
+def _():
     mo.md(r"""
     # 01. Window Functions
     """)
@@ -13,7 +20,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(mo):
+def _():
     mo.md(r"""
     ## Setup and Connection
     """)
@@ -22,17 +29,11 @@ def _(mo):
 
 @app.cell
 def _():
-    import marimo as mo
-    import os
-    import psycopg
-    import sqlalchemy
-    from advanced_sql.postgres_factory import PostgresFactory
-
-    return PostgresFactory, mo
+    return
 
 
 @app.cell
-def _(Engine, PostgresFactory):
+def _(Engine):
     # Connect to postgres
     factory: PostgresFactory = PostgresFactory()
     engine: Engine = factory.create_engine()
@@ -40,7 +41,7 @@ def _(Engine, PostgresFactory):
 
 
 @app.cell
-def _(engine: "Engine", mo):
+def _(engine: "Engine"):
     _df = mo.sql(
         f"""
         SELECT VERSION();
@@ -51,7 +52,7 @@ def _(engine: "Engine", mo):
 
 
 @app.cell
-def _(engine: "Engine", mo):
+def _(engine: "Engine"):
     _df = mo.sql(
         f"""
         SELECT * FROM information_schema.tables;
