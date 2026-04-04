@@ -1,5 +1,5 @@
 [project]
-name = "3ds-advanced-sql"
+name = "advanced-sql"
 version = "0.1.0"
 description = "365 Data Science Advanced SQL, using PostgreSQL, Marimo and DuckDB."
 readme = "README.md"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-3ds-advanced-sql = "3ds_advanced_sql:main"
+3ds-advanced-sql = "advanced_sql:main"
 
 [build-system]
 requires = ["uv_build>=0.11.2,<0.12.0"]
