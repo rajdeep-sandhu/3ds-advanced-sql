@@ -104,5 +104,41 @@ def _(create_database, engine: Engine, reset_schema):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## `ROW_NUMBER()`
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    Rank each employee's salary in descending order.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER()
+            	OVER(
+            		PARTITION BY emp_no
+            		ORDER BY salary DESC
+        		) AS row_num
+        FROM
+            salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
