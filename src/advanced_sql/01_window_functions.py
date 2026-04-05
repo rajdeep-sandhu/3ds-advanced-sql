@@ -77,6 +77,8 @@ def _():
         host = os.environ.get("POSTGRES_HOST", "localhost")
         port = 5432
 
+        print(user, password, database, host, port)
+
         conn = psycopg.connect(
             host=host,
             port=port,
@@ -94,6 +96,15 @@ def _():
 
         print("'employees' database created.")
 
+    def reset_schema(engine: Engine) -> None:
+        """
+        Resets the public schema to a clean state.
+        Equivalent to recreating the database for the purpose of this tutorial.
+        """
+        with engine.begin() as conn:
+            conn.exec_driver_sql("DROP SCHEMA public CASCADE;")
+            conn.exec_driver_sql("CREATE SCHEMA public;")
+
 
     def create_database(sql_file: Path, engine: Engine) -> None:
         """Create database using the supplied SQL file"""
@@ -109,14 +120,14 @@ def _():
             cur.close()
             raw_conn.commit()
 
-    return create_database, reset_database
+    return create_database, reset_schema
 
 
 @app.cell
-def _(create_database, engine: Engine, reset_database):
+def _(create_database, engine: Engine, reset_schema):
     sql_file: Path = Path(__file__).parent / "employees.sql"
-    reset_database()
-    # reset_schema(engine=engine)
+    # reset_database()
+    reset_schema(engine=engine)
     create_database(sql_file=sql_file, engine=engine)
     return
 
