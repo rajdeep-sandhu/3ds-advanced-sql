@@ -69,33 +69,6 @@ def _():
 
 @app.cell
 def _():
-    def reset_database() -> None:
-        """Reset the employee database."""
-        user = os.environ["POSTGRES_USER"]
-        password = os.environ["POSTGRES_PASSWORD"]
-        database = os.environ["POSTGRES_DB"]
-        host = os.environ.get("POSTGRES_HOST", "localhost")
-        port = 5432
-
-        print(user, password, database, host, port)
-
-        conn = psycopg.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname="postgres",
-            autocommit=True,
-        )
-
-        cur = conn.cursor()
-        cur.execute("DROP DATABASE IF EXISTS employees;")
-        cur.execute("CREATE DATABASE employees;")
-        cur.close()
-        conn.close()
-
-        print("'employees' database created.")
-
     def reset_schema(engine: Engine) -> None:
         """
         Resets the public schema to a clean state.
@@ -126,7 +99,6 @@ def _():
 @app.cell
 def _(create_database, engine: Engine, reset_schema):
     sql_file: Path = Path(__file__).parent / "employees.sql"
-    # reset_database()
     reset_schema(engine=engine)
     create_database(sql_file=sql_file, engine=engine)
     return
