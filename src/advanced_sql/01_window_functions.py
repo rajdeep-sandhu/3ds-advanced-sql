@@ -222,5 +222,31 @@ def _(dept_manager, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### List all employees partititioned by last name and ranked by employee number
+    List `emp_no`, `first_name` and `last_name` for all employees, partitioned by last name and assigned row numbers by employee number in ascending order.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            first_name,
+            last_name,
+            ROW_NUMBER() OVER(PARTITION BY last_name ORDER BY emp_no) AS row_num
+        FROM
+        	employees;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
