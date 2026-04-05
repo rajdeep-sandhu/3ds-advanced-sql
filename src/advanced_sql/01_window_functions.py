@@ -197,8 +197,28 @@ def _(employees, engine: Engine):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
+    mo.md(r"""
+    ### List all department managers ranked by employee number in descending order.
+    List department managers as `emp_no` and `dept_no` with row numbers assigned in descending order of `emp_no`.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            dept_no,
+            ROW_NUMBER() OVER(ORDER BY emp_no DESC) AS row_num
+        FROM
+            dept_manager;
+        """,
+        engine=engine
+    )
     return
 
 
