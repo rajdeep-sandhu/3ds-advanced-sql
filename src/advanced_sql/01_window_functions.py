@@ -287,5 +287,43 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### To fix this:
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Add an `ORDER BY` clause in the outer query.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER() OVER() AS row_num1,
+            ROW_NUMBER() OVER(PARTITION BY emp_no) AS row_num2,
+            ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS row_num3,
+            ROW_NUMBER() OVER(ORDER BY salary DESC) AS row_num4
+        FROM
+            salaries
+        ORDER BY
+            emp_no,
+            salary;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
