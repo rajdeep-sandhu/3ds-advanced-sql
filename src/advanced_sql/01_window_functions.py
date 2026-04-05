@@ -164,5 +164,43 @@ def _(dept_manager, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### List all employees partitioned by first name, sequentially numbered by last name order in each partition.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    List all employees in the `employees` table and assign a sequential number for each employee number. Partition by first name and order by last name in ascending order (for each partition).
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            first_name,
+            last_name,
+            ROW_NUMBER() OVER(PARTITION BY first_name ORDER BY last_name) AS row_num
+        FROM
+            employees;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
 if __name__ == "__main__":
     app.run()
