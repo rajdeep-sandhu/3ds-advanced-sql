@@ -115,7 +115,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    Rank each employee's salary in descending order.
+    ### Rank each employee's salary in descending order.
     """)
     return
 
@@ -134,6 +134,30 @@ def _(engine: Engine, salaries):
         		) AS row_num
         FROM
             salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank all managers by employee number in ascending order.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            dept_no,
+            ROW_NUMBER() OVER(ORDER BY emp_no) AS row_num
+        FROM
+            dept_manager;
         """,
         engine=engine
     )
