@@ -78,7 +78,6 @@ def _():
             conn.exec_driver_sql("DROP SCHEMA public CASCADE;")
             conn.exec_driver_sql("CREATE SCHEMA public;")
 
-
     def create_database(sql_file: Path, engine: Engine) -> None:
         """Create database using the supplied SQL file"""
         with open(sql_file, "r") as f:
@@ -168,13 +167,6 @@ def _(dept_manager, engine: Engine):
 def _():
     mo.md(r"""
     ### List all employees partitioned by first name, sequentially numbered by last name order in each partition.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    mo.md(r"""
     List all employees in the `employees` table and assign a sequential number for each employee number. Partition by first name and order by last name in ascending order (for each partition).
     """)
     return
@@ -242,6 +234,53 @@ def _(employees, engine: Engine):
             ROW_NUMBER() OVER(PARTITION BY last_name ORDER BY emp_no) AS row_num
         FROM
         	employees;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Multiple window functions in a `SELECT` statement
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### The output of the following query is messy
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.callout(mo.md
+               ("""
+               Query results in PostgreSQL will be different from the MySQL version.
+               - This is because MySQL (especially with InnoDB) returns rows in **clustered index order** for columns without a specified order,
+               which may appear as a **stable incidental order**.
+               - However, PostgreSQL **does not** reliably preserve physical order and may use different scan strategies, e.g. heap scan, parallelism, etc.
+               """), kind="info")
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER() OVER() AS row_num1,
+            ROW_NUMBER() OVER(PARTITION BY emp_no) AS row_num2,
+            ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS row_num3,
+            ROW_NUMBER() OVER(ORDER BY salary DESC) AS row_num4
+        FROM
+            salaries;
         """,
         engine=engine
     )
