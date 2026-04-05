@@ -78,9 +78,14 @@ def _():
         port = 5432
 
         conn = psycopg.connect(
-            host=host, user=user, password=password, port=port, autocommit=True
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            dbname="postgres",
+            autocommit=True,
         )
-    
+
         cur = conn.cursor()
         cur.execute("DROP DATABASE IF EXISTS employees;")
         cur.execute("CREATE DATABASE employees;")
@@ -111,6 +116,7 @@ def _():
 def _(create_database, engine: Engine, reset_database):
     sql_file: Path = Path(__file__).parent / "employees.sql"
     reset_database()
+    # reset_schema(engine=engine)
     create_database(sql_file=sql_file, engine=engine)
     return
 
