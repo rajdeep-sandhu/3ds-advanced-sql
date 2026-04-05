@@ -325,5 +325,30 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Use only window specifications requiring identical partitions.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER() OVER(PARTITION BY emp_no) AS row_num2,
+            ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS row_num3
+        FROM
+            salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
