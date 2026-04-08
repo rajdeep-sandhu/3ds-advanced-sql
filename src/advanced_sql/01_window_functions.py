@@ -356,6 +356,7 @@ def _():
     ### List managers with overall row numbering and ranked salary per manager.
 
     List managers and their salaries using `dept_manager` and `salaries`. Add two window function columns.
+
     - A global row number column without a specific ordering.
     - A per manager rank by salary in ascending order (lowest  1).
 
@@ -381,6 +382,41 @@ def _(dept_manager, engine: Engine, salaries):
         ORDER BY
         	row_num,
         	salary ASC;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## List managers with salary per manager, ranked in ascending and descending order in separate columns.
+
+    List managers and their salaries using dept_manager and salaries. Add two window function columns.
+
+    - A per manager rank by salary in ascending order (lowest 1).
+    - A per manager rank by salary in descending order (highest 1).
+
+    Do not use an `ORDER BY` clause in the `SELECT` statement.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	dm.emp_no,
+            s.salary,
+            ROW_NUMBER() OVER(PARTITION BY dm.emp_no ORDER BY s.salary ASC) AS salary_rank_asc,
+            ROW_NUMBER() OVER(PARTITION BY dm.emp_no ORDER BY s.salary DESC) AS salary_rank_desc
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	salaries s
+        		ON dm.emp_no = s.emp_no
         """,
         engine=engine
     )
