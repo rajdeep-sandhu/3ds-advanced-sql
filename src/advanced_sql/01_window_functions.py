@@ -373,7 +373,7 @@ def _(dept_manager, engine: Engine, salaries):
             dm.emp_no,
             s.salary,
             ROW_NUMBER() OVER() AS row_num,
-            ROW_NUMBER() OVER(PARTITION BY dm.emp_no ORDER BY salary ASC) AS salary_rank
+            ROW_NUMBER() OVER(PARTITION BY dm.emp_no ORDER BY s.salary ASC) AS salary_rank
         FROM
             dept_manager dm
         	INNER JOIN
@@ -381,7 +381,7 @@ def _(dept_manager, engine: Engine, salaries):
         		ON dm.emp_no = s.emp_no
         ORDER BY
         	row_num,
-        	salary ASC;
+        	s.salary ASC;
         """,
         engine=engine
     )
