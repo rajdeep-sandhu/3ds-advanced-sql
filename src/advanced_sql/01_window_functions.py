@@ -350,5 +350,42 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### List managers with overall row numbering and ranked salary per manager.
+
+    List managers and their salaries using `dept_manager` and `salaries`. Add two window function columns.
+    - A global row number column without a specific ordering.
+    - A per manager rank by salary in ascending order (lowest  1).
+
+    Return the results ordered by `row_num` and `salary` in ascending order.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            dm.emp_no,
+            s.salary,
+            ROW_NUMBER() OVER() AS row_num,
+            ROW_NUMBER() OVER(PARTITION BY dm.emp_no ORDER BY salary ASC) AS salary_rank
+        FROM
+            dept_manager dm
+        	INNER JOIN
+        	salaries s
+        		ON dm.emp_no = s.emp_no
+        ORDER BY
+        	row_num,
+        	salary ASC;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
