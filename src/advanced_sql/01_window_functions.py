@@ -391,7 +391,7 @@ def _(dept_manager, engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ## List managers with salary per manager, ranked in ascending and descending order in separate columns.
+    ### List managers with salary per manager, ranked in ascending and descending order in separate columns.
 
     List managers and their salaries using dept_manager and salaries. Add two window function columns.
 
@@ -420,6 +420,78 @@ def _(dept_manager, engine: Engine, salaries):
         """,
         engine=engine
     )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### List `Staff` employees with salaries in ascending order, but inversely ranked.
+
+    - Retrieve the employee number (`emp_no`) and job title (`title`) from the `titles` table, and the salary (`salary`) from the `salaries` table.
+    - Add a column to the left, named `row_num1`, starting from `1` and incrementing by `1` for each row from the obtained result.
+    - Also, add a fifth column, named `row_num2`, which provides a row position for each record per employee, starting from the total number of records obtained for that employee and continuing down to `1`.
+
+    Include only data about `'Staff'` members and employees with a number no greater than `10006`. Order the result by `emp_no`, `salary`, and `row_num1` in ascending order.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries, titles):
+    _df = mo.sql(
+        f"""
+        SELECT
+            ROW_NUMBER() OVER(ORDER BY t.emp_no ASC, s.salary ASC) AS row_num1,
+        	t.emp_no,
+            t.title,
+        	s.salary,
+            ROW_NUMBER() OVER(PARTITION BY t.emp_no ORDER BY s.salary DESC) AS row_num2
+        FROM
+        	titles t
+        	INNER JOIN
+        	salaries s
+        	ON t.emp_no = s.emp_no
+        WHERE
+        	t.emp_no <= 10006
+        AND t.title = 'Staff'
+        ORDER BY
+        	t.emp_no ASC,
+            s.salary ASC,
+        	row_num1 ASC;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(engine: Engine, titles):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM titles
+        WHERE emp_no = 10004
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT *
+        FROM salaries
+        WHERE emp_no = 10004
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _():
     return
 
 
