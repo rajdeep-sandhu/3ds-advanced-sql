@@ -507,23 +507,5 @@ def _(engine: Engine, salaries, titles):
     return
 
 
-@app.cell
-def _(engine: Engine, salaries):
-    _df = mo.sql(
-        f"""
-        SELECT *
-        FROM salaries
-        WHERE emp_no = 10004
-        """,
-        engine=engine
-    )
-    return
-
-
-@app.cell
-def _():
-    return
-
-
 if __name__ == "__main__":
     app.run()
