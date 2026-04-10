@@ -540,5 +540,35 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Using `WINDOW()`, list employees partitioned by first name, with each partition ordered by employee number in ascending order.
+
+    - List all workers from the `employees` table, partitioned by first name, with row numbers across each partition ordered by employee number in ascending order.
+    - Do **not** use an `ORDER BY` clause in the relevant `SELECT` statement.
+    - Use a `WINDOW` clause to specify the window.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            first_name,
+            last_name,
+            ROW_NUMBER() OVER w AS row_num 
+        FROM
+        	employees
+        WINDOW w AS (PARTITION BY first_name ORDER BY emp_no);
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
