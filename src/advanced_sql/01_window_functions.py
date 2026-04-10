@@ -507,5 +507,38 @@ def _(engine: Engine, salaries, titles):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## `WINDOW()` Clause
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### List `emp_no` and `salary`, ranked by `salary` in descending order across each `emp_no` partition.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER() OVER w AS row_num
+        FROM
+        	salaries
+        WINDOW w AS (PARTITION BY emp_no ORDER BY salary DESC);
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
