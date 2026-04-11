@@ -611,6 +611,46 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    ### List maximum salary for each employee number.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using `GROUP BY`
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	s.emp_no,
+            MAX(s.salary) AS max_salary
+        FROM
+        	(
+            SELECT
+            	emp_no,
+            	salary
+            FROM
+            	salaries
+            ) s
+        GROUP BY
+        	s.emp_no
+        ORDER BY s.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     ### List minimum and maximum salary for each employee number.
     """)
     return
@@ -642,6 +682,39 @@ def _(engine: Engine, salaries):
             ) s
         GROUP BY
         	s.emp_no
+        ORDER BY s.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Get maximum salary for each employee using window functions.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	s.emp_no,
+            s.salary AS max_salary
+        FROM
+        	(
+            SELECT
+            	emp_no,
+            	salary,
+            	ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS salary_desc
+            FROM
+            	salaries
+            ) s
+        WHERE
+            s.salary_desc = 1
         ORDER BY s.emp_no
         """,
         engine=engine
