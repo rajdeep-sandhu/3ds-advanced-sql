@@ -719,6 +719,31 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    #### Using window functions.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	DISTINCT emp_no,
+        	MAX(salary) OVER(PARTITION BY emp_no) AS max_salary
+        FROM
+        	salaries
+        ORDER BY
+            emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     ### List the second highest salary for each employee number.
     """)
     return
