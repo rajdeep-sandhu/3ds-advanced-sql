@@ -570,5 +570,35 @@ def _(employees, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Using the `WINDOW` clause, list employee number, first and last name, partitioned by first name and assigned row numbers in ascending order of employee number.
+
+    - Retrieve everything stored in the `emp_no`, `first_name`, and `last_name` columns from the `employees` table.
+    - Add a fourth column named `row_num`, which partitions the data by first name, sorts it by employee number in ascending order, and assigns a row number starting from `1` and incrementing for each row in every partition.
+    - Use the `WINDOW` keyword to solve the exercise.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	emp_no,
+            first_name,
+        	last_name,
+            ROW_NUMBER() OVER w AS row_num
+        FROM
+        	employees
+        WINDOW w AS (PARTITION BY first_name ORDER BY emp_no ASC);
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
