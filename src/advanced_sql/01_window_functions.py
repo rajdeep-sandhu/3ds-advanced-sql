@@ -683,6 +683,42 @@ def _(engine: Engine, salaries):
 
 @app.cell(hide_code=True)
 def _():
+    mo.md(r"""
+    ### List the second highest salary for each employee number.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### This is best done using `ROW_NUMBER()` and window functions, which have an advantage over `GROUP BY` for this application.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	s.emp_no,
+            s.salary AS max_salary
+        FROM
+        	(
+            SELECT
+            	emp_no,
+            	salary,
+            	ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS salary_desc
+            FROM
+            	salaries
+            ) s
+        WHERE
+            s.salary_desc = 2
+        ORDER BY s.emp_no
+        """,
+        engine=engine
+    )
     return
 
 
