@@ -600,5 +600,54 @@ def _(employees, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## `PARTITION BY` vs `GROUP BY`
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### List minimum and maximum salary for each employee number.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using `GROUP BY`.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	s.emp_no,
+            MIN(s.salary) AS min_salary,
+            MAX(s.salary) AS max_salary
+        FROM
+        	(
+            SELECT
+            	emp_no,
+            	salary
+            FROM
+            	salaries
+            ) s
+        GROUP BY
+        	s.emp_no
+        ORDER BY s.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
