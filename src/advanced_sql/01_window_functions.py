@@ -684,6 +684,41 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    ### List maximum salary for each employee number without using a subquery
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using `GROUP BY`.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	emp_no,
+        	MAX(salary)
+        FROM
+        	salaries
+        GROUP BY
+        	emp_no
+        ORDER BY
+        	emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     ### List the second highest salary for each employee number.
     """)
     return
