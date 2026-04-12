@@ -952,5 +952,39 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using window functions with `GROUP BY` and `FILTER()` (postgres specific).
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            MAX(s.salary) FILTER(WHERE salary_asc = 1) AS min_salary,
+            MAX(s.salary) FILTER(WHERE salary_desc = 1) AS max_salary
+        FROM
+            (
+            SELECT
+                emp_no,
+                salary,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary ASC) AS salary_asc,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS salary_desc
+            FROM
+            	salaries
+            ) AS s
+        GROUP BY
+        	s.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
