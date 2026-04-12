@@ -744,6 +744,32 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    #### Using `DISTINCT ON` (postgres specific).
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT DISTINCT ON (emp_no)
+            emp_no,
+            salary AS max_salary
+        FROM
+        	salaries
+        ORDER BY
+            emp_no,
+            salary DESC;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     ### List the second highest salary for each employee number.
     """)
     return
