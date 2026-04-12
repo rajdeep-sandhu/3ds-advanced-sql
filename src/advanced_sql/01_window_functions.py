@@ -1043,7 +1043,7 @@ def _(engine: Engine, salaries):
         f"""
         SELECT
             s.emp_no,
-            MIN(s.salary) AS min_salary
+            s.salary AS min_salary
         FROM
             (
             SELECT
@@ -1053,8 +1053,8 @@ def _(engine: Engine, salaries):
             FROM
             	salaries
             ) AS s
-        GROUP BY
-            s.emp_no
+        WHERE
+            s.salary_asc = 1
         ORDER BY
             s.emp_no;
         """,
