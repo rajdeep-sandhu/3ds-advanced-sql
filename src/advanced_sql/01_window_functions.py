@@ -728,8 +728,8 @@ def _():
 def _(engine: Engine, salaries):
     _df = mo.sql(
         f"""
-        SELECT
-        	DISTINCT emp_no,
+        SELECT DISTINCT
+            emp_no,
         	MAX(salary) OVER(PARTITION BY emp_no) AS max_salary
         FROM
         	salaries
@@ -817,6 +817,45 @@ def _(engine: Engine, salaries):
         GROUP BY
         	s.emp_no
         ORDER BY s.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using window functions, `GROUP BY` and `CASE-WHEN`.
+
+    - `CASE-WHEN` returns a column of `NULL` values and a single value where the ranking condition is true.
+    - `MAX()` is used as an aggregation function and to collapse the `NULL` values.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            MAX(CASE WHEN salary_asc = 1 THEN s.salary END) AS min_salary,
+            MAX(CASE WHEN salary_desc = 1 THEN s.salary END) AS max_salary
+        FROM
+        	(
+            SELECT
+                emp_no,
+                salary,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary ASC) AS salary_asc,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS salary_desc
+            FROM
+            	salaries
+            ) AS s
+        GROUP BY
+        	s.emp_no
+        ORDER BY
+            s.emp_no;
         """,
         engine=engine
     )
