@@ -1004,7 +1004,7 @@ def _(engine: Engine, salaries):
         f"""
         SELECT
             s.emp_no,
-            MIN(s.salary) AS min_salary
+            s.salary AS min_salary
         FROM
             (
             SELECT
@@ -1015,8 +1015,8 @@ def _(engine: Engine, salaries):
             	salaries
             WINDOW w AS (PARTITION BY emp_no ORDER BY salary ASC)
             ) AS s
-        GROUP BY
-            s.emp_no
+        WHERE
+            s.salary_asc = 1
         ORDER BY
             s.emp_no;
         """,
@@ -1057,6 +1057,43 @@ def _(engine: Engine, salaries):
             s.emp_no
         ORDER BY
             s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the lowest salary for each employee using an aggregate function with a subquery.
+
+    - Get the lowest salary value each employee has ever signed a contract for.
+    - Do not use a window function.
+    - Use the `salaries` table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            MIN(s.salary) as min_salary
+        FROM
+        	(
+            SELECT
+                emp_no,
+                salary
+            FROM
+            	salaries
+            ) AS s
+        GROUP BY
+        	s.emp_no
+        ORDER BY
+        	s.emp_no;
         """,
         engine=engine
     )
