@@ -890,5 +890,41 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Pure window function based using `CASE-WHEN`.
+    - In this case, the `CASE-WHEN` runs over each `emp_no` partition.
+    - `MAX()` aggregates the returned column and collapses `NULL` values.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT DISTINCT
+            s.emp_no,
+            MAX(CASE WHEN salary_asc = 1 THEN s.salary END) OVER(PARTITION BY s.emp_no) AS min_salary,
+            MAX(CASE WHEN salary_desc = 1 THEN s.salary END) OVER(PARTITION BY s.emp_no) AS max_salary
+        FROM
+        	(
+            SELECT
+                emp_no,
+                salary,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary ASC) AS salary_asc,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS salary_desc
+            FROM
+            	salaries
+            ) AS s
+        ORDER BY
+            s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
