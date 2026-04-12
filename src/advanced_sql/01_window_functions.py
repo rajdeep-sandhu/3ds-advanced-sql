@@ -793,7 +793,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    #### Using `GROUP BY`.
+    #### Using `GROUP BY` with subuery.
     """)
     return
 
@@ -817,6 +817,34 @@ def _(engine: Engine, salaries):
         GROUP BY
         	s.emp_no
         ORDER BY s.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Uning `GROUP BY` without subquery.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            MIN(salary),
+            MAX(salary)
+        FROM
+            salaries
+        GROUP BY
+            emp_no
+        ORDER BY
+            emp_no;
         """,
         engine=engine
     )
