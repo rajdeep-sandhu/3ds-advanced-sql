@@ -1100,5 +1100,44 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the second lowest salary for each employee using a subquery and the `WINDOW()` clause.
+
+    - Get the second lowest salary value each employee has ever signed a contract for.
+    - Use a subquery containing a window function, as well as a window specified using the `WINDOW` keyword.
+    - Use the `salaries` table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            s.salary AS min_salary
+        FROM
+            (
+            SELECT
+                emp_no,
+                salary,
+                ROW_NUMBER() OVER w AS salary_asc
+            FROM
+            	salaries
+            WINDOW w AS (PARTITION BY emp_no ORDER BY salary ASC)
+            ) AS s
+        WHERE
+            s.salary_asc = 2
+        ORDER BY
+            s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
