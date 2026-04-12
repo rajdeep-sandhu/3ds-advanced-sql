@@ -1025,5 +1025,43 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the lowest salary for each employee using a subquery and a window function.
+
+    - Get the lowest salary value each employee has ever signed a contract for.
+    - Use a subquery containing a window function. Specify the window in the field list.
+    - Use the `salaries` table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            MIN(s.salary) AS min_salary
+        FROM
+            (
+            SELECT
+                emp_no,
+                salary,
+                ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary ASC) AS salary_asc
+            FROM
+            	salaries
+            ) AS s
+        GROUP BY
+            s.emp_no
+        ORDER BY
+            s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
