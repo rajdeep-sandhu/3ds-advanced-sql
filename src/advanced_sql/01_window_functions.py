@@ -1181,5 +1181,35 @@ def _(dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### NB The window function does not actually contribute to the result, as the grouping and aggregation rely on `salary` rather than `salary_asc`. The query can be simplified, as below.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            d.emp_no AS emp_no,
+            MIN(s.salary) AS min_salary
+        FROM
+            salaries AS s
+            INNER JOIN
+            dept_manager AS d
+                ON s.emp_no = d.emp_no
+        GROUP BY
+        	d.emp_no
+        ORDER BY
+        	d.emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
