@@ -1292,5 +1292,50 @@ def _(dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## `RANK()` and `DENSE_RANK()`
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get employees who have had the same salary level more than once.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            (COUNT(salary) - COUNT(DISTINCT salary)) AS diff
+        FROM
+            salaries
+        GROUP BY
+            emp_no
+        HAVING
+            (COUNT(salary) - COUNT(DISTINCT salary)) > 0
+        ORDER BY
+        	emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+ 
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
