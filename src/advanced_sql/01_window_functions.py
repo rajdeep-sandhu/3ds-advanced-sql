@@ -1211,5 +1211,66 @@ def _(dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the maximum salary by manager, using a window function with a `WHERE` clause.
+
+    - Get the employee number and the highest contract salary value, using the alias `max_salary` for all managers.
+    - Use a window function with a `WHERE` clause to retrieve the maximum salary.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            manager_salary.emp_no, 
+        	manager_salary.salary AS max_salary
+        FROM
+            (
+        	SELECT 
+        		s.emp_no,
+            	s.salary,
+            	ROW_NUMBER() OVER w AS salary_desc
+        	FROM
+        		dept_manager d
+        		JOIN 
+        	    salaries s
+            		ON s.emp_no = d.emp_no
+        	WINDOW w AS (PARTITION BY s.emp_no ORDER BY s.salary DESC)
+            ) manager_salary
+        WHERE
+            manager_salary.salary_desc = 1
+        ORDER BY
+            manager_salary.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        	SELECT 
+        		s.emp_no,
+            	s.salary,
+            	ROW_NUMBER() OVER w AS salary_desc
+        	FROM
+        		dept_manager d
+        		JOIN 
+        	    salaries s
+            		ON s.emp_no = d.emp_no
+        	WINDOW w AS (PARTITION BY s.emp_no ORDER BY s.salary DESC)
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
