@@ -1332,8 +1332,29 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
- 
+    ### Apply `ROW_NUMBER()`, `RANK()` and `DENSE_RANK()` in descending order to salaries for `emp_no = 11839`.
     """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER() OVER w AS row_num,
+            RANK() OVER W AS rank,
+            DENSE_RANK() OVER w AS dense_rank
+        FROM
+        	salaries
+        WHERE
+            emp_no = 11839
+        WINDOW w AS (PARTITION BY emp_no ORDER BY salary DESC);
+        """,
+        engine=engine
+    )
     return
 
 
