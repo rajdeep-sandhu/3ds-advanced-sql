@@ -1139,5 +1139,47 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the lowest salary for each manager.
+
+    - Get the employee number and the lowest contract salary value, using the alias `min_salary` for all managers.
+    - Use both the `dept_manager` and `salaries` tables.
+    - Include both the `PARTITION BY` and `GROUP BY` clauses.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            manager_salary.emp_no,
+            MIN(manager_salary.salary) AS min_salary
+        FROM
+        	(
+            SELECT
+                d.emp_no AS emp_no,
+                s.salary AS salary,
+                ROW_NUMBER() OVER w AS salary_asc
+            FROM
+                salaries s
+                INNER JOIN
+                dept_manager d
+                    ON s.emp_no = d.emp_no
+            WINDOW w AS (PARTITION BY d.emp_no ORDER BY s.salary ASC)
+            ) AS manager_salary
+        GROUP BY
+        	manager_salary.emp_no
+        ORDER BY
+        	manager_salary.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
