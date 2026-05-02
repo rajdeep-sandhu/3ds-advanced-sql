@@ -1252,10 +1252,25 @@ def _(dept_manager, engine: Engine, salaries):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the employee number and third highest contract value by manager.
+
+    - Retrieve the employee number and the third-highest contract salary value, using the alias `third_max_salary` for all managers.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
 def _(dept_manager, engine: Engine, salaries):
     _df = mo.sql(
         f"""
+        SELECT
+            manager_salary.emp_no, 
+        	manager_salary.salary AS max_salary
+        FROM
+            (
         	SELECT 
         		s.emp_no,
             	s.salary,
@@ -1266,6 +1281,11 @@ def _(dept_manager, engine: Engine, salaries):
         	    salaries s
             		ON s.emp_no = d.emp_no
         	WINDOW w AS (PARTITION BY s.emp_no ORDER BY s.salary DESC)
+            ) manager_salary
+        WHERE
+            manager_salary.salary_desc = 3
+        ORDER BY
+            manager_salary.emp_no;
         """,
         engine=engine
     )
