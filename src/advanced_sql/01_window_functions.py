@@ -1314,7 +1314,7 @@ def _(engine: Engine, salaries):
         f"""
         SELECT
             emp_no,
-            (COUNT(salary) - COUNT(DISTINCT salary)) AS diff
+            (COUNT(salary) - COUNT(DISTINCT salary)) AS diff,
         FROM
             salaries
         GROUP BY
@@ -1486,6 +1486,32 @@ def _(engine: Engine, salaries):
         	salaries
         WHERE
         	emp_no = 10002;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank all contract salary values of employee 48726 from in descending order, using an `order_num` column which assigns the same rank to identical salary values, leaving gaps for subsequent ranks.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            RANK() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS order_num
+        FROM
+        	salaries
+        WHERE
+        	emp_no = 48726;
         """,
         engine=engine
     )
