@@ -38,7 +38,7 @@ def _():
     return (engine,)
 
 
-@app.cell(hide_code=True)
+@app.cell
 def _():
     _df = mo.sql(
         f"""
@@ -48,7 +48,7 @@ def _():
     return
 
 
-@app.cell(hide_code=True)
+@app.cell
 def _(engine: Engine):
     _df = mo.sql(
         f"""
@@ -1494,6 +1494,69 @@ def _(engine: Engine, salaries):
         WHERE
         	emp_no = 48726
         WINDOW w AS (PARTITION BY emp_no ORDER BY salary DESC);
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Ranking window functions with joins
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank department manager contract salaries in descending order, partitioned by department.
+
+    - Get data only about the managers from the `employees` database.
+    - Partition the relevant information by the department in which the managers have worked.
+    - Arrange the partitions by the managers' salary contract values in descending order.
+    - Rank the managers according to their salaries in a certain department without losing track of the salary contracts signed within each department.
+    - Display the start and end dates of each salary contract under `salary_from_date` and `salary_to_date`.
+    - Display the first and last date on which an employee has been a manager, as per the `dept_manager` table, as `dept_manager_from_date` and `dept_manager_to_date`.
+
+    The output represents the cost that the managers have represented to the company in terms of salary.
+    """)
+    return
+
+
+@app.cell
+def _():
+    # Basic query, strictly as per tutorial, which misses cases where managers move into a department with an existing salary and the final salary change if it persists when they leave the department.
+    return
+
+
+@app.cell
+def _(departments, dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            dm.dept_no,
+            d.dept_name,
+        	dm.emp_no,
+            RANK() OVER w AS dept_salary_rank,
+            s.salary,
+            s.from_date AS salary_from_date,
+            s.to_date AS salary_to_date,
+            dm.from_date AS dept_manager_from_date,
+            dm.to_date AS dept_manager_to_date
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	departments d
+        		ON dm.dept_no = d.dept_no
+            INNER JOIN
+            salaries s
+            	ON dm.emp_no = s.emp_no
+            		AND (s.from_date BETWEEN dm.from_date AND dm.to_date)
+            		AND (s.to_date BETWEEN dm.from_date AND dm.to_date)
+        WINDOW w AS (PARTITION BY dm.dept_no ORDER BY s.salary DESC);
+	
         """,
         engine=engine
     )
