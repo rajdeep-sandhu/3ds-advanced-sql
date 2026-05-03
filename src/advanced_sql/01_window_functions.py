@@ -1361,9 +1361,7 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Get all salary values for an employee in descending order.
-
-    - Use a window function to get all salary values that employee number `10560` has ever signed a contract for, ordered and displayed from highest to lowest.
+    ### Get all salary values for employee `10560` in descending order, using a window function.
     """)
     return
 
@@ -1380,6 +1378,36 @@ def _(engine: Engine, salaries):
         	salaries
         WHERE
         	emp_no = 10560
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts that each manager has ever signed while working in the company.
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            COUNT(salary) AS salary_contracts
+        FROM
+        	salaries s
+        	INNER JOIN
+        	dept_manager d
+        		ON s.emp_no = d.emp_no
+        GROUP BY
+        	s.emp_no
+        ORDER BY
+        	s.emp_no
         """,
         engine=engine
     )
