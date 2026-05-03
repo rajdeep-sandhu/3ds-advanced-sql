@@ -1641,7 +1641,8 @@ def _(employees, engine: Engine, salaries):
             INNER JOIN
             salaries s
             	ON e.emp_no = s.emp_no
-            	AND e.emp_no BETWEEN 10500 AND 10600
+        WHERE
+            e.emp_no BETWEEN 10500 AND 10600
         ORDER BY
             emp_no;
         """,
