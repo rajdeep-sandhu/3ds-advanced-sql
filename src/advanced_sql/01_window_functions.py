@@ -1469,7 +1469,10 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Number all contract salary values of employee 10002 from in descending order, using an `order_num` column which assigns different row numbers to identical salary values.
+    ### Get all contract salary values of employee 48726 in descending order, using an `order_num` column which assigns different row numbers to identical salary values, a `rank` column and a `dense_rank` column.
+
+    - The query combines 3 separate questions.
+    - The employee number is modified, as the tutorial exercise uses a different, smaller dataset.
     """)
     return
 
@@ -1481,37 +1484,14 @@ def _(engine: Engine, salaries):
         SELECT
             emp_no,
             salary,
-            ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS order_num
+            ROW_NUMBER() OVER w AS order_num,
+            RANK() OVER w AS rank,
+            DENSE_RANK() OVER w AS dense_rank
         FROM
         	salaries
         WHERE
-        	emp_no = 10002;
-        """,
-        engine=engine
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    mo.md(r"""
-    ### Rank all contract salary values of employee 48726 from in descending order, using an `order_num` column which assigns the same rank to identical salary values, leaving gaps for subsequent ranks.
-    """)
-    return
-
-
-@app.cell
-def _(engine: Engine, salaries):
-    _df = mo.sql(
-        f"""
-        SELECT
-            emp_no,
-            salary,
-            RANK() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS order_num
-        FROM
-        	salaries
-        WHERE
-        	emp_no = 48726;
+        	emp_no = 48726
+        WINDOW w AS (PARTITION BY emp_no ORDER BY salary DESC);
         """,
         engine=engine
     )
