@@ -103,8 +103,9 @@ def _(create_database, engine: Engine, reset_schema):
     return
 
 
-app._unparsable_cell(
-    r"""
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     ### Database Tables
 
     - `salaries`: Salary contract values and their dates by employee.
@@ -115,9 +116,8 @@ app._unparsable_cell(
     - `departments`: Department name by department number.
     - `dept_emp`: Dates when an employee was in a particular department.
     - `titles`: Job titles with start end finish dates by employee number.
-    """,
-    name="_"
-)
+    """)
+    return
 
 
 @app.cell(hide_code=True)
@@ -1542,9 +1542,11 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
-    # Basic query, strictly as per tutorial, which misses cases where managers move into a department with an existing salary and the final salary change if it persists when they leave the department.
+    mo.md(r"""
+    #### Basic query, strictly as per tutorial, which misses cases where managers move into a department with an existing salary and the final salary change if it persists when they leave the department.
+    """)
     return
 
 
@@ -1572,7 +1574,45 @@ def _(departments, dept_manager, engine: Engine, salaries):
             	ON dm.emp_no = s.emp_no
             		AND (s.from_date BETWEEN dm.from_date AND dm.to_date)
             		AND (s.to_date BETWEEN dm.from_date AND dm.to_date)
+        WINDOW w AS (PARTITION BY dm.dept_no ORDER BY s.salary DESC);
+        """,
+        engine=engine
+    )
+    return
 
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Modified query, which addresses cases where managers move into a department with an existing salary and the final salary change if it persists when they leave the department.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            dm.dept_no,
+            d.dept_name,
+        	dm.emp_no,
+            RANK() OVER w AS dept_salary_rank,
+            s.salary,
+            s.from_date AS salary_from_date,
+            s.to_date AS salary_to_date,
+            dm.from_date AS dept_manager_from_date,
+            dm.to_date AS dept_manager_to_date
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	departments d
+        		ON dm.dept_no = d.dept_no
+            INNER JOIN
+            salaries s
+            	ON dm.emp_no = s.emp_no
+            		AND (s.from_date <= dm.to_date)
+            		AND (s.to_date >= dm.from_date)
         WINDOW w AS (PARTITION BY dm.dept_no ORDER BY s.salary DESC);
         """,
         engine=engine
