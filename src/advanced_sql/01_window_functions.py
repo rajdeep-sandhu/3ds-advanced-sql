@@ -103,6 +103,23 @@ def _(create_database, engine: Engine, reset_schema):
     return
 
 
+app._unparsable_cell(
+    r"""
+    ### Database Tables
+
+    - `salaries`: Salary contract values and their dates by employee.
+    - `dept_emp_latest_date`: Start and finish dates for by employee. `9999-01-01` indicates that the employee is active.
+    - `current_dept_emp`: Start and finish dates in current/latest department by employee number. `9999-01-01` indicates that the employee is active in the current department.
+    - `employees`: Employee details, including hire date.
+    - `dept_manager`: Employee numbers of managers with their current department, start and finish details. Includes past managers for each department.
+    - `departments`: Department name by department number.
+    - `dept_emp`: Dates when an employee was in a particular department.
+    - `titles`: Job titles with start end finish dates by employee number.
+    """,
+    name="_"
+)
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
@@ -1555,8 +1572,8 @@ def _(departments, dept_manager, engine: Engine, salaries):
             	ON dm.emp_no = s.emp_no
             		AND (s.from_date BETWEEN dm.from_date AND dm.to_date)
             		AND (s.to_date BETWEEN dm.from_date AND dm.to_date)
+
         WINDOW w AS (PARTITION BY dm.dept_no ORDER BY s.salary DESC);
-	
         """,
         engine=engine
     )
