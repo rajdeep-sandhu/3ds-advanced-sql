@@ -1377,7 +1377,7 @@ def _(engine: Engine, salaries):
         FROM
         	salaries
         WHERE
-        	emp_no = 10560
+        	emp_no = 10560;
         """,
         engine=engine
     )
@@ -1407,7 +1407,7 @@ def _(dept_manager, engine: Engine, salaries):
         GROUP BY
         	s.emp_no
         ORDER BY
-        	s.emp_no
+        	s.emp_no;
         """,
         engine=engine
     )
@@ -1433,7 +1433,7 @@ def _(engine: Engine, salaries):
         FROM
         	salaries
         WHERE
-        	emp_no = 10560
+        	emp_no = 10560;
         """,
         engine=engine
     )
@@ -1459,7 +1459,33 @@ def _(engine: Engine, salaries):
         FROM
         	salaries
         WHERE
-        	emp_no = 10560
+        	emp_no = 10560;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Number all contract salary values of employee 10002 from in descending order, using an `order_num` column which assigns different row numbers to identical salary values.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            ROW_NUMBER() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS order_num
+        FROM
+        	salaries
+        WHERE
+        	emp_no = 10002;
         """,
         engine=engine
     )
