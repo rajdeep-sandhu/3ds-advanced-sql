@@ -1414,5 +1414,31 @@ def _(dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get all salary values that employee 10560 has ever signed a contract for, ranked from highest to lowest, allowing gaps in ranks following equal rows.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            emp_no,
+            salary,
+            RANK() OVER(PARTITION BY emp_no ORDER BY salary DESC) AS rank
+        FROM
+        	salaries
+        WHERE
+        	emp_no = 10560
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
