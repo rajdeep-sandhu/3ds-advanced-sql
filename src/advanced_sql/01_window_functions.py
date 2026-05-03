@@ -1650,5 +1650,39 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank contract salaries without gaps, partitioned by employee for `emp_no` between 10500 and 10600 inclusive. Contracts should have been signed at least 4 full-years after the initial hire date.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            e.emp_no,
+            e.hire_date,
+            s.from_date AS salary_from_date,
+            s.salary,
+            DENSE_RANK() OVER(PARTITION BY e.emp_no ORDER BY s.salary DESC) AS rank
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        		AND s.from_date >= e.hire_date + INTERVAL '4 years'
+        WHERE
+        	e.emp_no BETWEEN 10500 and 10600
+        ORDER BY
+        	e.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
