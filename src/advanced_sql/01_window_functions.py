@@ -1620,5 +1620,35 @@ def _(departments, dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank contract salaries partitioned by employee for  `emp_no` between 10500 and 10600 inclusive. Allow gaps for ranks following equal ranks.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            e.emp_no,
+            s.salary,
+            RANK() OVER(PARTITION BY e.emp_no ORDER BY s.salary DESC) as rank
+        FROM
+        	employees e
+            INNER JOIN
+            salaries s
+            	ON e.emp_no = s.emp_no
+            	AND e.emp_no BETWEEN 10500 AND 10600
+        ORDER BY
+            emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
