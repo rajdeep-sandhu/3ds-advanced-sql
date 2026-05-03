@@ -1314,7 +1314,9 @@ def _(engine: Engine, salaries):
         f"""
         SELECT
             emp_no,
-            (COUNT(salary) - COUNT(DISTINCT salary)) AS diff,
+            COUNT(salary) AS salary_count,
+            COUNT(DISTINCT salary) AS distinct_salary_count,
+            (COUNT(salary) - COUNT(DISTINCT salary)) AS diff
         FROM
             salaries
         GROUP BY
