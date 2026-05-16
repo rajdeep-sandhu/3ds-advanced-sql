@@ -1799,6 +1799,8 @@ def _():
     mo.md(r"""
     ### Get contract salaries iņ ascending order for employees from 10500 to 10600 inclusive, partitioned by employee number. Include the following:
 
+    - Employee number.
+    - Current salary value.
     - The previous salary value.
     - The next salary value.
     - The difference between the current and previous salary.
@@ -1828,6 +1830,46 @@ def _(engine: Engine, salaries):
         WINDOW w AS (PARTITION BY emp_no ORDER BY salary ASC)
         ORDER BY
             emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get contract salaries iņ ascending order for each employee, partitioned by employee number. Include the following:
+
+    - Employee number.
+    - Current salary value.
+    - The previous salary value.
+    - The salary value preceding the previous salary value.
+    - The next salary value.
+    - The salary value following the next salary value.
+
+    Limit the output to the first 1000 records.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	emp_no,
+            salary,
+            LAG(salary, 1) OVER w AS prev_salary,
+            LAG(salary, 2) OVER w AS prev_prev_salary,
+            LEAD(salary, 1) OVER w AS next_salary,
+            LEAD(salary, 2) OVER w AS next_next_salary
+        FROM
+        	salaries
+        WINDOW w AS (PARTITION BY emp_no ORDER BY salary ASC)
+        ORDER BY
+            emp_no
+        LIMIT 1000;
         """,
         engine=engine
     )
