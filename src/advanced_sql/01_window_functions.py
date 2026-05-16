@@ -1708,7 +1708,43 @@ def _(employees, engine: Engine, salaries):
             	ON e.emp_no = s.emp_no
         WHERE
         	e.emp_no BETWEEN 10001 AND 10006
-        ORDER BY emp_no;
+        ORDER BY emp_no ASC;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank contract salaries in descending order for each employee using the field `employee_salary_ranking`, without gaps, for employees 10001 to 10003, using `emp_no` and `hire_date` from `employees` and `salary` and `from_date` from `salaries`.
+
+    - Retieve only contracts that started before 2000.
+    - Sort by `emp_no` in ascending order, using the `employees` table.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	e.emp_no,
+            DENSE_RANK() OVER(PARTITION BY e.emp_no ORDER BY s.salary DESC),
+        	s.salary,
+            e.hire_date,
+            s.from_date
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+            	AND DATE_PART('YEAR', s.from_date) < 2000
+        WHERE
+        	e.emp_no BETWEEN 10001 AND 10003
+        ORDER BY e.emp_no ASC;
         """,
         engine=engine
     )
