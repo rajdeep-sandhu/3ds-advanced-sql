@@ -1952,5 +1952,54 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Aggregate window functions
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get employee numbers, contract salary values, start and end dates of the first ever contract signed by each employee, using the salaries table.
+
+    - NB The query does not use aggregate window functions but is practice for developing subqueries used in this section.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            s.salary,
+            s.from_date,
+            s.to_date
+        FROM
+            salaries s
+            INNER JOIN
+            (-- first_contract
+            SELECT
+            	emp_no,
+            	MIN(from_date) AS first_salary_date
+            FROM
+            	salaries
+            GROUP BY
+            	emp_no
+            ) AS first_contract
+        		ON s.emp_no = first_contract.emp_no
+        		AND s.from_date = first_contract.first_salary_date
+        ORDER BY
+        	s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
