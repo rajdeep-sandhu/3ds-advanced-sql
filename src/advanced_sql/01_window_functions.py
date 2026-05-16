@@ -1751,5 +1751,48 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## `LAG()` and `LEAD()`
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get contract salary values for employee 10001 in ascending order of salary (not `from_date`), with the following:
+
+    - The previous salary value.
+    - The next salary value.
+    - The difference between the current and previous salary.
+    - The difference between the next and current salary.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	emp_no,
+            salary,
+            LAG(salary, 1) OVER w AS prev_salary,
+            LEAD(salary, 1) OVER w AS next_salary,
+            salary - (LAG(salary, 1) OVER w) AS current_prev_diff,
+            (LEAD(salary, 1) OVER w) - salary AS next_current_diff
+        FROM
+        	salaries
+        WHERE
+        	emp_no = 10001
+        WINDOW w AS (ORDER BY salary ASC); -- Partitioning not needed for a single emp_no
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
