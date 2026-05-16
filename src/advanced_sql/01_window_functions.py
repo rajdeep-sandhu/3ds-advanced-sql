@@ -1963,9 +1963,9 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Get employee numbers and contract salary values of the latest contract signed by each employee, using the salaries table.
+    ### Get employee numbers, contract salary values, from and to dates of the latest contract signed by each employee, using the salaries table.
 
-    - NB The query does not use aggregate window functions but is used as a subquery in this section.
+    - NB The query does not use aggregate window functions but is used to develop a subquery in this section.
     """)
     return
 
@@ -1976,7 +1976,9 @@ def _(engine: Engine, salaries):
         f"""
         SELECT
             s.emp_no,
-            s.salary
+            s.salary,
+            s.from_date,
+            s.to_date
         FROM
             salaries s
             INNER JOIN
