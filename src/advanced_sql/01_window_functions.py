@@ -1963,7 +1963,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Get employee numbers, contract salary values, from and to dates of the latest contract signed by each employee, using the salaries table.
+    ### Get employee numbers, contract salary values, from and to dates of the latest contract signed by each employee, using the `salaries` table.
 
     - NB The query does not use aggregate window functions but is used to develop a subquery in this section.
     """)
@@ -2005,7 +2005,7 @@ def _(engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Get employee numbers, contract salary values, start and end dates of the first ever contract signed by each employee, using the salaries table.
+    ### Get employee numbers, contract salary values, start and end dates of the first ever contract signed by each employee, using the `salaries` table.
 
     - NB The query does not use aggregate window functions but is practice for developing subqueries used in this section.
     """)
@@ -2037,6 +2037,48 @@ def _(engine: Engine, salaries):
         		AND s.from_date = first_contract.first_salary_date
         ORDER BY
         	s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get employee number, department number, from and to dates of each employee's current department from the `dept_emp` table.
+
+    - NB The query does not use aggregate window functions but is used to develop a subquery in this section.
+    """)
+    return
+
+
+@app.cell
+def _(dept_emp, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            de.emp_no,
+            de.dept_no,
+            de.from_date,
+            de.to_date
+        FROM
+            dept_emp de
+            INNER JOIN
+            (
+            SELECT
+                emp_no,
+                MAX(from_date) AS max_from_date
+            FROM
+            	dept_emp
+            GROUP BY
+            	emp_no
+            ) AS latest_dept
+        		ON de.emp_no = latest_dept.emp_no
+        		AND de.from_date = latest_dept.max_from_date  -- Get latest dept
+        		AND de.to_date > CURRENT_DATE -- Include only current employees
+        ORDER BY
+        	de.emp_no;
         """,
         engine=engine
     )
