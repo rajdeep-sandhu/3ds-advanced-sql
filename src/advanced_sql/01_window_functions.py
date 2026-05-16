@@ -2088,7 +2088,7 @@ def _(dept_emp, engine: Engine):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Get the current salary vs the all time average salary in the department for all **currently employed** employees in the `dept_emp` table:
+    ### Get the current salary vs the all time average salary in the department for all **currently employed** employees in the `dept_emp` table, including:
 
     - Employee number.
     - Department.
@@ -2151,6 +2151,89 @@ def _(departments, dept_emp, engine: Engine, salaries):
             		ON s.emp_no = latest_contract.emp_no
             		AND s.from_date = latest_contract.max_from_date  -- Get latest available salary
             		AND s.to_date > CURRENT_DATE  -- Exclude expired salaries
+            ) AS s_current
+        		ON de_current.emp_no = s_current.emp_no
+        WINDOW w AS (PARTITION BY de_current.dept_no)
+        ORDER BY de_current.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get current salary vs average salary in the department for employees with contracts signed after 01.01.2000 and terminated before 01.01.2002 as per the `dept_emp` table, including:
+
+    - Employee number.
+    - The salary values of the latest contracts  signed during the above time period.
+    - The department as specified in the latest contract signed during the suggested time period.
+    - Use a window function get the average salary paid in the department the employee was last working in during the above time period, called `average_salary_per_department`.
+
+    ##### Note:
+    - This is essentially the same as the previous query except that the contracts are valid within the specified period.
+    - Assume that the `to_date` values in the `salaries` and `dept_emp` tables are greater than the `from_date` values in the same tables.
+    - The output should contain 200 rows.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_emp, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            de_current.emp_no,
+            d.dept_name,
+            s_current.salary,
+            AVG(s_current.salary) OVER w AS average_salary_per_department
+        FROM
+        	(-- de_current
+            SELECT
+                de.emp_no,
+                de.dept_no
+            FROM
+                dept_emp de
+                INNER JOIN
+                (
+                SELECT
+                    emp_no,
+                    MAX(from_date) AS max_from_date
+                FROM
+                	dept_emp
+                GROUP BY
+                	emp_no
+                ) AS latest_dept
+            		ON de.emp_no = latest_dept.emp_no
+            		AND de.from_date = latest_dept.max_from_date
+            		AND de.from_date > '20000101'
+            		AND de.to_date < '20020101'
+            ) AS de_current
+        	INNER JOIN
+        	departments d
+        		ON de_current.dept_no = d.dept_no
+        	INNER JOIN
+        	(-- s_current
+            SELECT
+                s.emp_no,
+                s.salary
+            FROM
+                salaries s
+                INNER JOIN
+                (-- latest_contract
+                SELECT
+                    emp_no,
+                    MAX(from_date) AS max_from_date
+                FROM
+                    salaries
+                GROUP BY
+                	emp_no
+                ) AS latest_contract
+            		ON s.emp_no = latest_contract.emp_no
+            		AND s.from_date = latest_contract.max_from_date
+            		AND s.from_date > '20000101'
+            		AND s.to_date < '20020101'
             ) AS s_current
         		ON de_current.emp_no = s_current.emp_no
         WINDOW w AS (PARTITION BY de_current.dept_no)
