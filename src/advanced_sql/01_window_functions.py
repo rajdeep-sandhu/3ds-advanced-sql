@@ -1963,6 +1963,46 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    ### Get employee numbers and contract salary values of the latest contract signed by each employee, using the salaries table.
+
+    - NB The query does not use aggregate window functions but is used as a subquery in this section.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            s.salary
+        FROM
+            salaries s
+            INNER JOIN
+            (-- latest_contract
+            SELECT
+                emp_no,
+                MAX(from_date) AS max_from_date
+            FROM
+                salaries
+            GROUP BY
+            	emp_no
+            ) AS latest_contract
+        		ON s.emp_no = latest_contract.emp_no
+        		AND s.from_date = latest_contract.max_from_date  -- Get latest available salary
+        		AND s.to_date > CURRENT_DATE  -- Exclude expired salaries
+        ORDER BY
+            s.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     ### Get employee numbers, contract salary values, start and end dates of the first ever contract signed by each employee, using the salaries table.
 
     - NB The query does not use aggregate window functions but is practice for developing subqueries used in this section.
