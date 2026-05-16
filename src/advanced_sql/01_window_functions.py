@@ -1685,5 +1685,35 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank contract salaries in descending order for each employee using the field `employee_salary_ranking`, allowing gaps, for employees 10001 to 10006, using `emp_no` from `employees` and `salary` from `salaries`.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	e.emp_no,
+            RANK() OVER(PARTITION BY e.emp_no ORDER BY s.salary DESC) AS employee_salary_ranking,
+            s.salary
+        FROM
+        	employees e
+            INNER JOIN
+            salaries s
+            	ON e.emp_no = s.emp_no
+        WHERE
+        	e.emp_no BETWEEN 10001 AND 10006
+        ORDER BY emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
