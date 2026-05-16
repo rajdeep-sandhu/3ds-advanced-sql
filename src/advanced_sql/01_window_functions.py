@@ -1876,5 +1876,81 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get salary contracts below $70,000, partitioned by employee number, for employee numbers between 10003 and 10008, inclusive. Include:
+
+    - `emp_no`
+    - `salary`
+    - Previous salary (`previous_salary`)
+    - Next salary (`next_salary`)
+    - The difference between an employee's current and previous salary (`diff_salary_current_previous`)
+    - The difference between an employee's next and current salary (`diff_salary_next_current`)
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	emp_no,
+            salary,
+            LAG(salary, 1) OVER w AS previous_salary,
+            LEAD(salary, 1) OVER w AS next_salary,
+            salary - (LAG(salary, 1) OVER w) AS diff_salary_current_previous,
+            (LEAD(salary, 1) OVER w) - salary AS diff_salary_next_current
+        FROM
+        	salaries
+        WHERE
+        	emp_no BETWEEN 10003 AND 10008
+            AND salary < 70000
+        WINDOW w AS (PARTITION BY emp_no ORDER BY salary ASC)
+        ORDER BY
+            emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get current, lagging and leading salaries for each employee in ascending order, partitioned by employee number.
+
+    - Employee number (emp_no)
+    - Salary (salary)
+    - The salary value three contracts prior to the current contract salary value (`_before_previous_salary`)
+    - The salary value three contracts after the current contract salary value (`_after_next_salary`).
+
+    Retrieve only the first 100 rows of data.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	emp_no,
+            salary,
+            LAG(salary, 3) OVER w AS _before_previous_salary,
+            LEAD(salary, 3) OVER w AS _after_next_salary
+        FROM
+        	salaries
+        WINDOW w AS (PARTITION BY emp_no ORDER BY salary ASC)
+        ORDER BY
+            emp_no
+        LIMIT 100;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
