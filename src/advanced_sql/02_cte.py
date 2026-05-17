@@ -206,20 +206,67 @@ def _(employees, engine: Engine, salaries):
             COUNT(s.salary) AS total_salary_contracts,
             ROUND(AVG(s.salary)) AS total_avg_salary
         FROM
-        	    employees e
+        	employees e
             INNER JOIN
             salaries s
             	ON e.emp_no = s.emp_no
         	CROSS JOIN
-        		cte
+        		cte;
         """,
         engine=engine
     )
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
+    mo.md(r"""
+    #### Using inner and cross join. Gender condition in `INNER JOIN`.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+        	FROM
+            	salaries
+            ),
+
+            total_contracts AS
+            (
+            SELECT
+            	COUNT(*) AS total_salary_contracts
+            FROM
+            	salaries
+            )
+
+        SELECT
+        	SUM(CASE
+            		WHEN s.salary > cte.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS f_salaries_above_avg,
+            COUNT(s.salary) AS total_f_salary_contracts,
+            (SELECT total_salary_contracts FROM total_contracts) AS total_salary_contracts,
+            ROUND(AVG(cte.avg_salary)) AS total_avg_salary -- Aggregation here is only to satisfy postgres syntax.
+        FROM
+        	employees e
+            INNER JOIN
+            salaries s
+            	ON e.emp_no = s.emp_no
+            	AND e.gender = 'F'
+        	CROSS JOIN
+        		cte;
+        """,
+        engine=engine
+    )
     return
 
 
