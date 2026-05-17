@@ -179,6 +179,8 @@ def _():
 def _():
     mo.md(r"""
     #### Using inner and cross join. Gender condition in `CASE WHEN`.
+
+    NB `total_avg_salary` is calculated from `cte.avg_salary`, but `s.salary` can also be used, as it is not filtered by gender.
     """)
     return
 
@@ -204,7 +206,7 @@ def _(employees, engine: Engine, salaries):
             ) AS f_salaries_above_avg,
             SUM(CASE WHEN e.gender = 'F' THEN 1 ELSE 0 END) AS total_f_salary_contracts,
             COUNT(s.salary) AS total_salary_contracts,
-            ROUND(AVG(s.salary)) AS total_avg_salary
+            ROUND(AVG(cte.avg_salary)) AS total_avg_salary -- Aggregation here is only to satisfy postgres syntax.
         FROM
         	employees e
             INNER JOIN
@@ -222,6 +224,8 @@ def _(employees, engine: Engine, salaries):
 def _():
     mo.md(r"""
     #### Using inner and cross join. Gender condition in `INNER JOIN`.
+
+    NB `total_avg_salary` is calculated from `cte.avg_salary`, as `s.salary` is already filtered by gender.
     """)
     return
 
