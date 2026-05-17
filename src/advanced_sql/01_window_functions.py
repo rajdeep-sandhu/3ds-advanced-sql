@@ -2345,5 +2345,47 @@ def _(departments, dept_emp, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Using `DISTINCT` and window functions.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_emp, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            DISTINCT a.dept_no,
+        	a.dept_name,
+            MIN(a.salary) OVER w AS min_salary,
+            MAX(a.salary) OVER w AS max_salary,
+            ROUND(AVG(a.salary) OVER w) AS avg_salary
+        FROM
+            (
+            SELECT
+            	de.dept_no,
+                d.dept_name,
+                s.salary
+            FROM
+            	salaries s
+            	INNER JOIN
+            	dept_emp de
+            		ON s.emp_no = de.emp_no
+            	INNER JOIN
+            	departments d
+            		ON de.dept_no = d.dept_no
+            ) a
+        WINDOW w AS (PARTITION BY dept_no ORDER BY dept_no ASC)
+        ORDER BY
+        	a.dept_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
