@@ -22,5 +22,44 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Setup and Connection
+    """)
+    return
+
+
+@app.cell
+def _():
+    # Connect to postgres
+    factory: PostgresFactory = PostgresFactory()
+    engine: Engine = factory.create_engine()
+    connection: Connection = engine.connect()
+    return (engine,)
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT VERSION();
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM information_schema.tables;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
