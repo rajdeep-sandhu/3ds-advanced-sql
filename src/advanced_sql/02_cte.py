@@ -105,5 +105,22 @@ def _(engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Database Tables
+
+    - `salaries`: Salary contract values and their dates by employee.
+    - `dept_emp_latest_date`: Start and finish dates for by employee. `9999-01-01` indicates that the employee is active.
+    - `current_dept_emp`: Start and finish dates in current/latest department by employee number. `9999-01-01` indicates that the employee is active in the current department.
+    - `employees`: Employee details, including hire date.
+    - `dept_manager`: Employee numbers of managers with their current department, start and finish details. Includes past managers for each department.
+    - `departments`: Department name by department number.
+    - `dept_emp`: Dates when an employee was in a particular department.
+    - `titles`: Job titles with start end finish dates by employee number.
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
