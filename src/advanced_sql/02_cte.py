@@ -227,7 +227,8 @@ def _():
     mo.md(r"""
     #### Using inner and cross join. Gender condition in `INNER JOIN`.
 
-    NB `total_avg_salary` is calculated from `cte.avg_salary`, as `s.salary` is already filtered by gender.
+    - Shows both `SUM()` and `COUNT()` methods to get female employee salaries above average salary.
+    - NB `total_avg_salary` is calculated from `cte.avg_salary`, as `s.salary` is already filtered by gender.
     """)
     return
 
@@ -258,7 +259,12 @@ def _(employees, engine: Engine, salaries):
             		WHEN s.salary > cte.avg_salary
             		THEN 1 ELSE 0
             	END
-            ) AS f_salaries_above_avg,
+            ) AS f_salaries_above_avg_using_sum,
+            	COUNT(CASE
+            		WHEN s.salary > cte.avg_salary
+            		THEN s.salary ELSE NULL
+            	END
+            ) AS f_salaries_above_avg_using_count,
             COUNT(s.salary) AS total_f_salary_contracts,
             (SELECT total_salary_contracts FROM total_contracts) AS total_salary_contracts,
             ROUND(AVG(cte.avg_salary)) AS total_avg_salary -- Aggregation here is only to satisfy postgres syntax.
