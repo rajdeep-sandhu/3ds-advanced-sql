@@ -2237,7 +2237,47 @@ def _(departments, dept_emp, engine: Engine, salaries):
             ) AS s_current
         		ON de_current.emp_no = s_current.emp_no
         WINDOW w AS (PARTITION BY de_current.dept_no)
-        ORDER BY de_current.emp_no;
+        ORDER BY
+            de_current.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Without using window functions but using a subquery, get the `emp_no`, `salary`, `from_date`, and `to_date` of the latest contract of **all** employees from the `salaries` table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            s.emp_no,
+            s.salary,
+            s.from_date,
+            s.to_date
+        FROM
+            salaries s
+            INNER JOIN
+            (
+            SELECT
+                emp_no,
+                MAX(from_date) as max_from_date
+            FROM
+            	salaries
+            GROUP BY
+            	emp_no
+            ) AS latest_contract
+        		ON s.emp_no = latest_contract.emp_no
+        		AND s.from_date = latest_contract.max_from_date
+        ORDER BY
+        	s.emp_no;
         """,
         engine=engine
     )
