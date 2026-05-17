@@ -171,6 +171,8 @@ def _(employees, engine: Engine, salaries):
 def _():
     mo.md(r"""
     ### Get the number of salary contracts signed by female employees that have been valued above the all-time average contract salary value, the total contracts signed by women, and the total contracts signed overall.
+
+    NB `CROSS JOIN` is cheap for scalar values.
     """)
     return
 
@@ -268,6 +270,45 @@ def _(employees, engine: Engine, salaries):
             	AND e.gender = 'F'
         	CROSS JOIN
         		cte;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using a scalar subquery, without CTE.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	SUM(
+            	CASE
+            		WHEN s.salary > (SELECT AVG(salary) FROM salaries)
+            		AND e.gender = 'F'
+            		THEN 1 ELSE 0
+            	END
+            ) AS f_salaries_above_avg,
+            SUM(
+            	CASE
+            		WHEN e.gender = 'F'
+            		THEN 1 ELSE 0
+            	END
+            ) AS total_f_salary_contracts,
+            COUNT(salary) AS total_salary_contracts,
+            ROUND(AVG(salary)) AS total_avg_salary
+        FROM
+            employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no;
         """,
         engine=engine
     )
