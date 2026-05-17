@@ -321,5 +321,67 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the sumber of salary contracts signed by male employees with a salary value below or equal to the all-time average salary.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using a CTE and `SUM()` as well as `COUNT()` in the SELECT statement.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+        	cte AS
+        	(
+            SELECT
+            	AVG(salary) as avg_salary
+            FROM
+            	salaries
+            )
+
+        SELECT
+            SUM(CASE
+            		WHEN e.gender = 'M'
+            			AND s.salary <= cte.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS m_salaries_below_avg_using_sum,
+            COUNT(CASE
+            		WHEN e.gender = 'M'
+            			AND s.salary <= cte.avg_salary
+            		THEN s.salary ELSE NULL
+            	END
+            ) AS m_salaries_below_avg_using_count,
+            SUM(CASE
+            		WHEN e.gender = 'M'
+            		THEN 1 ELSE 0
+            	END
+            ) AS total_m_salary_contracts,
+            COUNT(s.salary) AS total_salary_contracts,
+            ROUND(AVG(s.salary)) AS total_avg_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        	CROSS JOIN
+        	cte;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
