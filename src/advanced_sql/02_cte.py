@@ -167,6 +167,57 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts signed by female employees that have been valued above the all-time average contract salary value, the total contracts signed by women, and the total contracts signed overall.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using inner and cross join. Gender condition in `CASE WHEN`.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+        	FROM
+            	salaries
+            )
+
+        SELECT
+        	SUM(CASE
+            		WHEN e.gender = 'F' AND s.salary > cte.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS f_salaries_above_avg,
+            SUM(CASE WHEN e.gender = 'F' THEN 1 ELSE 0 END) AS total_f_salary_contracts,
+            COUNT(s.salary) AS total_salary_contracts,
+            ROUND(AVG(s.salary)) AS total_avg_salary
+        FROM
+        	    employees e
+            INNER JOIN
+            salaries s
+            	ON e.emp_no = s.emp_no
+        	CROSS JOIN
+        		cte
+        """,
+        engine=engine
+    )
+    return
+
+
 @app.cell
 def _():
     return
