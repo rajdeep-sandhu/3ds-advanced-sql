@@ -122,5 +122,55 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Introduction
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts signed by female employees that have been valued above the all-time average contract salary value.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+        	FROM
+            	salaries
+            )
+
+        SELECT
+            COUNT(e.emp_no) AS f_salaries_above_avg
+        FROM
+            employees e
+            INNER JOIN
+            salaries s
+            	ON e.emp_no = s.emp_no
+        		AND e.gender = 'F'
+        WHERE
+            s.salary > (SELECT avg_salary FROM cte)
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
 if __name__ == "__main__":
     app.run()
