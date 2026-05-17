@@ -2284,5 +2284,66 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### In a subquery named `a`, join `salaries` and `dept_emp` on `emp_no`, as well as `dept_emp` and `departments` on `dept_no` to select `dept_no` from the `dept_emp` table, `dept_name` from the `departments` table, and the `salary` from the `salaries` table. Use this in an outer query to get:
+
+    - The distinct `dept_no`.
+    - The relevant `dept_name`.
+    - The smallest salary value recorded for the given department (`min_salary`).
+    - The highest salary value recorded for the given department (`max_salary`).
+    - The average salary value recorded for the given department (`avg_salary`)
+    - Round salaries to the nearest dollar.
+
+    Sort the final output by `dept_no` in ascending order.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using `GROUP BY`.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_emp, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            a.dept_no,
+        	a.dept_name,
+            MIN(salary) AS min_salary,
+            MAX(salary) AS max_salary,
+            ROUND(AVG(salary)) AS avg_salary
+        FROM
+            (
+            SELECT
+            	de.dept_no,
+                d.dept_name,
+                s.salary
+            FROM
+            	salaries s
+            	INNER JOIN
+            	dept_emp de
+            		ON s.emp_no = de.emp_no
+            	INNER JOIN
+            	departments d
+            		ON de.dept_no = d.dept_no
+            ) a
+        GROUP BY
+        	a.dept_no,
+        	a.dept_name
+        ORDER BY
+        	a.dept_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
