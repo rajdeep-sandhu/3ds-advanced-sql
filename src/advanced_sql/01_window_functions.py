@@ -2316,9 +2316,9 @@ def _(departments, dept_emp, engine: Engine, salaries):
         SELECT
             a.dept_no,
         	a.dept_name,
-            MIN(salary) AS min_salary,
-            MAX(salary) AS max_salary,
-            ROUND(AVG(salary)) AS avg_salary
+            MIN(a.salary) AS min_salary,
+            MAX(a.salary) AS max_salary,
+            ROUND(AVG(a.salary)) AS avg_salary
         FROM
             (
             SELECT
