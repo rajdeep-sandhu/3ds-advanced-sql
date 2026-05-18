@@ -492,5 +492,55 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts signed by male employees that have been valued above the average contract salary value as `no_m_salaries_above_avg`, and the total contracts signed by men as `no_of_m_salary_contracts`.
+
+    - Use a CTE and aggregate functions.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+                SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            )
+
+        SELECT
+        	SUM(
+            	CASE	
+            		WHEN s.salary > cte.avg_salary
+            			AND e.gender = 'M'
+            		THEN 1 ELSE 0
+            	END
+            ) AS no_m_salaries_above_avg,
+            SUM(
+            	CASE	
+            		WHEN e.gender = 'M'
+            		THEN 1 ELSE 0
+            	END
+            ) AS no_of_m_salary_contracts
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        	CROSS JOIN
+        	cte
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
