@@ -433,5 +433,64 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Considering the salary contracts signed by female employees in the company, how many have been signed for a value below the average? Store the output in a column named no_f_salaries_below_avg. In a second column named no_of_f_salary_contracts, provide the total number of contracts signed by women.
+    Use the salary column from the salaries table and the gender column from the employees table. Match the two tables on the employee number column (emp_no).
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts signed by female employees that have been valued below the average contract salary value as `no_f_salaries_below_avg`, and the total contracts signed by women as `no_of_f_salary_contracts`.
+
+    - Use a CTE and aggregate functions.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+                SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            )
+
+        SELECT
+        	SUM(
+            	CASE	
+            		WHEN s.salary < cte.avg_salary
+            			AND e.gender = 'F'
+            		THEN 1 ELSE 0
+            	END
+            ) AS no_f_salaries_below_avg,
+            SUM(
+            	CASE	
+            		WHEN e.gender = 'F'
+            		THEN 1 ELSE 0
+            	END
+            ) AS no_of_f_salary_contracts
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        	CROSS JOIN
+        	cte
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
