@@ -426,7 +426,7 @@ def _(employees, engine: Engine, salaries):
             	AVG(salary) as avg_salary 
             FROM
             	salaries
-            ) AS a
+            ) AS a;
         """,
         engine=engine
     )
@@ -485,7 +485,7 @@ def _(employees, engine: Engine, salaries):
         	salaries s
         		ON e.emp_no = s.emp_no
         	CROSS JOIN
-        	cte
+        	cte;
         """,
         engine=engine
     )
@@ -535,7 +535,72 @@ def _(employees, engine: Engine, salaries):
         	salaries s
         		ON e.emp_no = s.emp_no
         	CROSS JOIN
-        	cte
+        	cte;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## `WITH` clause with multiple subclauses.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of female employees whose highest contract salary values were higher than the company average.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            ),
+
+        	max_f_salaries AS
+        	(
+            SELECT
+                e.emp_no,
+                MAX(s.salary) AS max_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'F'
+            GROUP BY
+            	e.emp_no
+            )
+
+        SELECT
+        	SUM(
+            	CASE
+            		WHEN max_f_salaries.max_salary > avg_salary.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS f_highest_salaries_above_avg,
+            COUNT(e.emp_no) AS total_f_highest_salaries
+        FROM
+            employees e
+            INNER JOIN
+        	max_f_salaries
+            	ON e.emp_no = max_f_salaries.emp_no
+        	CROSS JOIN
+        	avg_salary;
         """,
         engine=engine
     )
