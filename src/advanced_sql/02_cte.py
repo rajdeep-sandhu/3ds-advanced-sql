@@ -618,7 +618,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    Using two CTE and a `SUM()` function in the SELECT statement.
+    #### Using two CTE and a `SUM()` function in the SELECT statement.
     """)
     return
 
@@ -656,6 +656,63 @@ def _(employees, engine: Engine, salaries):
             	CASE
             		WHEN max_m_salaries.max_salary < avg_salary.avg_salary
             		THEN 1 ELSE 0
+            	END
+            ) AS m_highest_salaries_above_avg,
+            COUNT(e.emp_no) AS total_m_highest_salaries
+        FROM
+            employees e
+            INNER JOIN
+        	max_m_salaries
+            	ON e.emp_no = max_m_salaries.emp_no
+        	CROSS JOIN
+        	avg_salary;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Using two CTE and a `COUNT()` function in the SELECT statement.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            ),
+
+        	max_m_salaries AS
+        	(
+            SELECT
+                e.emp_no,
+                MAX(s.salary) AS max_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'M'
+            GROUP BY
+            	e.emp_no
+            )
+
+        SELECT
+        	COUNT(
+            	CASE
+            		WHEN max_m_salaries.max_salary < avg_salary.avg_salary
+            		THEN max_m_salaries.max_salary ELSE NULL
             	END
             ) AS m_highest_salaries_above_avg,
             COUNT(e.emp_no) AS total_m_highest_salaries
