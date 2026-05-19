@@ -655,12 +655,9 @@ def _(employees, engine: Engine, salaries):
             		THEN 1 ELSE 0
             	END
             ) AS m_highest_salaries_above_avg,
-            COUNT(e.emp_no) AS total_m_highest_salaries
+            COUNT(max_m_salaries.emp_no) AS total_m_highest_salaries
         FROM
-            employees e
-            INNER JOIN
         	max_m_salaries
-            	ON e.emp_no = max_m_salaries.emp_no
         	CROSS JOIN
         	avg_salary;
         """,
@@ -712,12 +709,9 @@ def _(employees, engine: Engine, salaries):
             		THEN max_m_salaries.max_salary ELSE NULL
             	END
             ) AS m_highest_salaries_above_avg,
-            COUNT(e.emp_no) AS total_m_highest_salaries
+            COUNT(max_m_salaries.emp_no) AS total_m_highest_salaries
         FROM
-            employees e
-            INNER JOIN
         	max_m_salaries
-            	ON e.emp_no = max_m_salaries.emp_no
         	CROSS JOIN
         	avg_salary;
         """,
