@@ -726,5 +726,48 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the highest contract salaries of all employees hired in 2000 or later.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+        	max_salary AS
+            (
+            SELECT
+            	emp_no,
+                MAX(salary) as max_salary
+            FROM
+            	salaries
+            GROUP BY
+            	emp_no
+            )
+
+        SELECT
+        	e.emp_no,
+            e.hire_date,
+        	ms.max_salary AS highest_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	max_salary ms
+        		ON e.emp_no = ms.emp_no
+        		AND e.hire_date >= '2000-01-01'
+        ORDER BY
+        	e.emp_no;
+
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
