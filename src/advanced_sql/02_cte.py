@@ -528,7 +528,7 @@ def _(employees, engine: Engine, salaries):
             		WHEN e.gender = 'M'
             		THEN 1 ELSE 0
             	END
-            ) AS no_of_m_salary_contracts
+            ) AS no_of_m_salary_contracts,
         FROM
         	employees e
         	INNER JOIN
@@ -593,7 +593,13 @@ def _(employees, engine: Engine, salaries):
             		THEN 1 ELSE 0
             	END
             ) AS f_highest_salaries_above_avg,
-            COUNT(max_f_salaries.emp_no) AS total_f_highest_salaries
+            COUNT(max_f_salaries.emp_no) AS total_f_highest_salaries,
+            CONCAT(
+                ROUND(
+            		SUM(CASE WHEN max_f_salaries.max_salary > avg_salary.avg_salary
+                		THEN 1 ELSE 0 END)::numeric
+                	/ COUNT(max_f_salaries.emp_no) * 100, 2),
+            	'%') AS percentage
         FROM
         	max_f_salaries
         	CROSS JOIN
