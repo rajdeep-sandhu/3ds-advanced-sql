@@ -122,5 +122,43 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Introduction
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table with a list of highest contract salaries signed by all female employees who have worked in the company.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS f_highest_salaries AS
+        SELECT
+            e.emp_no,
+        	MAX(s.salary) AS f_highest_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.gender = 'F'
+        GROUP BY
+        	e.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
