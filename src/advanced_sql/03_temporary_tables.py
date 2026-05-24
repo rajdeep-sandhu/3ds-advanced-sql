@@ -182,5 +182,29 @@ def _(engine: Engine, f_highest_salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Get data for `emp_no` 10010 and below from the `f_highest_salaries` temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+        	f_highest_salaries
+        WHERE
+        	emp_no <= 10010;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
