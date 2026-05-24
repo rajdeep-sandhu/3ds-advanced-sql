@@ -869,5 +869,58 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of female employees whose highest contract salary values were below the company average as `highest_f_salaries_below_total_avg`.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            ),
+
+        	max_f_salaries AS
+        	(
+            SELECT
+                e.emp_no,
+                MAX(s.salary) AS max_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'F'
+            GROUP BY
+            	e.emp_no
+            )
+
+        SELECT
+        	SUM(
+            	CASE
+            		WHEN max_f_salaries.max_salary < avg_salary.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS highest_f_salaries_below_total_avg
+        FROM
+        	max_f_salaries
+        	CROSS JOIN
+        	avg_salary;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
