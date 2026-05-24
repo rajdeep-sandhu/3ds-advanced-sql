@@ -160,5 +160,27 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Retrieve data from the temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+            f_highest_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
