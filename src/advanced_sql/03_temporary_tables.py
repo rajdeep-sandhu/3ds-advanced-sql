@@ -206,5 +206,24 @@ def _(engine: Engine, f_highest_salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Drop the `f_highest_salaries` temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS f_highest_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
