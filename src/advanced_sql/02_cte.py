@@ -769,5 +769,60 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of contracts signed by female employees below the company average (`no_f_salaries_below_avg`) and the total number of contracts signed by all employees (`total_no_of_salary_contracts`) using two CTEs.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            avg_salary AS
+            (
+            SELECT
+                AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            ),
+            tot_contracts AS
+            (
+            SELECT
+            	COUNT(salary) AS tot_contracts
+            FROM
+            	salaries
+            )
+
+        SELECT
+        	SUM(
+            	CASE
+            		WHEN s.salary < a.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS no_f_salaries_below_avg,
+            (SELECT tot_contracts FROM tot_contracts) AS total_no_of_salary_contracts
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+            	ON e.emp_no = s.emp_no
+            	AND e.gender = 'F'
+        	CROSS JOIN
+        	avg_salary a;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
 if __name__ == "__main__":
     app.run()
