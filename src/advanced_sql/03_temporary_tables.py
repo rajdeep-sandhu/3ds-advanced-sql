@@ -255,5 +255,27 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Retrieve data from the temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, male_max_salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+        	male_max_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
