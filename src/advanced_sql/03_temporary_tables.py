@@ -225,5 +225,35 @@ def _(engine: Engine, f_highest_salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Store the highest contract salaries of all male employees in a temporary table called `male_max_salaries`.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS male_max_salaries AS 
+        SELECT
+        	e.emp_no,
+            MAX(s.salary) AS max_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.gender = 'M'
+        GROUP BY
+        	e.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
