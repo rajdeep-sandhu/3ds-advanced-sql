@@ -277,5 +277,23 @@ def _(engine: Engine, male_max_salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Drop the `male_max_salaries` table.
+    """)
+    return
+
+
+@app.cell
+def _(male_max_salaries):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS male_max_salaries;
+        """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
