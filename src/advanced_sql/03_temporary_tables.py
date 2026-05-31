@@ -453,9 +453,11 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
+    mo.md(r"""
     #### `UNION` which, in MySQL, would return `ERROR 1137: Can't reopen table`, but works on PostgreSQL.
+    """)
     return
 
 
@@ -472,6 +474,50 @@ def _(engine: Engine, f_highest_salaries_limited):
             *
         FROM
             f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### **MySQL Workaround:** `UNION` using a CTE.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                e.emp_no,
+            	MAX(s.salary) AS f_highest_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'F'
+            GROUP BY
+            	e.emp_no
+            LIMIT 10
+            )
+
+        SELECT
+        	*
+        FROM
+        	cte
+        UNION
+        SELECT
+        	*
+        FROM
+        	cte;
         """,
         engine=engine
     )
