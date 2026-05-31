@@ -445,5 +445,38 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with `UNION` in MySQL
+    """)
+    return
+
+
+@app.cell
+def _():
+    #### `UNION` which, in MySQL, would return `ERROR 1137: Can't reopen table`, but works on PostgreSQL.
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+            f_highest_salaries_limited
+        UNION
+        SELECT
+            *
+        FROM
+            f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
