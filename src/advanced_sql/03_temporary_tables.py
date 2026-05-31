@@ -308,7 +308,7 @@ def _():
     mo.md(r"""
     **This section is specific to MySQL.**
 
-    - Although this notebook uses PostgreSQL, the original course is based on MySQL, which has a specific limitation where temporary tables are locked for use and can be invoked only once, otherwise a `ERROR 1137: Can't reopen table: temp_table` error occurs. The query processor cannot open multiple references to the same temporary table simultaneously within a single statement.
+    - Although this notebook uses PostgreSQL, the original course is based on MySQL, which has a specific limitation where temporary tables are locked for use and can be invoked only once, otherwise an `ERROR 1137: Can't reopen table: temp_table` error occurs. The query processor cannot open multiple references to the same temporary table simultaneously within a single statement.
     - Therefore, in MySQL, they cannot be used in **self joins, `UNION`** or **`UNION ALL`** operators.
 
     **Workaround**
@@ -358,6 +358,42 @@ def _(engine: Engine, f_highest_salaries_limited):
     _df = mo.sql(
         f"""
         SELECT * FROM f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with self joins in MySQL
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Self join which, in MySQL, would return `ERROR 1137: Can't reopen table`, but works on PostgreSQL.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        SELECT
+            t1.emp_no AS t1_emp_no,
+            t1.f_highest_salary AS t1_f_highest_salary,
+            t2.emp_no AS t2_emp_no,
+            t2.f_highest_salary AS t2_f_highest_salary
+        FROM
+            f_highest_salaries_limited t1
+            JOIN
+            f_highest_salaries_limited t2
+            	ON t1.emp_no = t2.emp_no;
         """,
         engine=engine
     )
