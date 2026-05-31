@@ -400,5 +400,50 @@ def _(engine: Engine, f_highest_salaries_limited):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### **MySQL Workaround:** Self join using a CTE.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                e.emp_no,
+            	MAX(s.salary) AS f_highest_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'F'
+            GROUP BY
+            	e.emp_no
+            LIMIT 10
+            )
+
+        SELECT
+            t1.emp_no AS t1_emp_no,
+            t1.f_highest_salary AS t1_f_highest_salary,
+            t2.emp_no AS t2_emp_no,
+            t2.f_highest_salary AS t2_f_highest_salary
+        FROM
+            cte t1
+            JOIN
+            cte t2
+            	ON t1.emp_no = t2.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
