@@ -325,7 +325,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Create a temporary table with a list of highest contract salaries signed by all female employees who have worked in the company. Limit the list to 10 records.
+    ### Create a temporary table (`f_highest_salaries_limited`) with a list of highest contract salaries signed by all female employees who have worked in the company. Limit the list to 10 records.
     """)
     return
 
