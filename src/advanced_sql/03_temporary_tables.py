@@ -295,5 +295,32 @@ def _(male_max_salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Replace a temporary table with a CTE.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    **This section is specific to MySQL.**
+
+    - Although this notebook uses PostgreSQL, the original course is based on MySQL, which has a specific limitation where temporary tables are locked for use and can be invoked only once, otherwise a `ERROR 1137: Can't reopen table: temp_table` error occurs. The query processor cannot open multiple references to the same temporary table simultaneously within a single statement.
+    - Therefore, in MySQL, they cannot be used in **self joins, `UNION`** or **`UNION ALL`** operators.
+
+    **Workaround**
+
+    - Use a CTE to define the query that would have been used by the temporary table.
+
+    **Caveat**
+
+    - A temporary table is a snapshot of data at the moment that it was created. A CTE is re-evaluated each time a query is run. Therefore, **the result may be different if the source tables have changed in the interim.**
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
