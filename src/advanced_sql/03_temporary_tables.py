@@ -589,6 +589,8 @@ def _(dates, engine: Engine):
 def _():
     mo.md(r"""
     #### Join `dates` with itself.
+
+    - Corresponding columns from both table aliases have the same `datetime` values.
     """)
     return
 
