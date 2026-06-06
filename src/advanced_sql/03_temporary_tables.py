@@ -543,5 +543,36 @@ def _(engine: Engine, f_highest_salaries_limited):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary Table vs CTE
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Create a temporary table called `dates`, containing the current date and time, a month earlier and a ear later.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS dates AS
+        SELECT
+            NOW() AS current_date_and_time,
+        	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
+        	NOW() + INTERVAL '1 YEAR' AS a_year_later
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
