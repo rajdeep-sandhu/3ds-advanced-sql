@@ -524,5 +524,24 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Drop table `f_highest_salaries_limited`.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
