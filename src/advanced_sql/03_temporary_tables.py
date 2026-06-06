@@ -546,7 +546,7 @@ def _(engine: Engine, f_highest_salaries_limited):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Temporary Table vs CTE
+    ## Temporary Table vs CTE
     """)
     return
 
@@ -554,7 +554,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    #### Create a temporary table called `dates`, containing the current date and time, a month earlier and a ear later.
+    ### Create a temporary table called `dates`, containing the current date and time, a month earlier and a ear later.
     """)
     return
 
@@ -582,6 +582,14 @@ def _(dates, engine: Engine):
         """,
         engine=engine
     )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with self joins.
+    """)
     return
 
 
