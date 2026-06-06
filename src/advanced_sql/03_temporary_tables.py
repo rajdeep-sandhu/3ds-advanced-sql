@@ -574,5 +574,16 @@ def _(engine: Engine):
     return
 
 
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM dates;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
