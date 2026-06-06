@@ -585,5 +585,13 @@ def _(dates, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Drop temporary table `dates`.
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
