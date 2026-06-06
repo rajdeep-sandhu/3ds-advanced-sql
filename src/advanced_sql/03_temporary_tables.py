@@ -588,8 +588,49 @@ def _(dates, engine: Engine):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    #### Join `dates` with itself.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            d1.current_date_and_time AS d1_current_date_and_time,
+            d1.a_month_earlier AS d1_a_month_earlier,
+            d1.a_year_later AS d1_a_year_later,
+            d2.current_date_and_time AS d2_current_date_and_time,
+            d2.a_month_earlier AS d2_a_month_earlier,
+            d2.a_year_later AS d2_a_year_later
+        FROM
+            dates d1
+        	JOIN
+        	dates d2
+        		ON d1.current_date_and_time = d2.current_date_and_time;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     #### Drop temporary table `dates`.
     """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS dates;
+        """,
+        engine=engine
+    )
     return
 
 
