@@ -709,6 +709,43 @@ def _(dates, engine: Engine):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
+    ### Temporary tables with `UNION`.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Return the `UNION` of `dates` with itself.
+
+    - Returns a single row, as the `datetime` values of the `UNION` rows are the same.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	*
+        FROM
+        	dates
+        UNION
+        SELECT
+        	*
+        FROM
+        	dates;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
     #### Drop temporary table `dates`.
     """)
     return
