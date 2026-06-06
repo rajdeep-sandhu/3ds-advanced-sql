@@ -567,7 +567,7 @@ def _(engine: Engine):
         SELECT
             NOW() AS current_date_and_time,
         	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
-        	NOW() + INTERVAL '1 YEAR' AS a_year_later
+        	NOW() + INTERVAL '1 YEAR' AS a_year_later;
         """,
         engine=engine
     )
@@ -608,6 +608,47 @@ def _(dates, engine: Engine):
             dates d1
         	JOIN
         	dates d2
+        		ON d1.current_date_and_time = d2.current_date_and_time;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Join `dates` with a CTE that returns the same columns.
+
+    - In this case, the join returns no results, as the CTE returns a different `datetime` to when the `dates` table was created.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
+            	NOW() + INTERVAL '1 YEAR' AS a_year_later
+            )
+
+        SELECT
+            d1.current_date_and_time AS d1_current_date_and_time,
+            d1.a_month_earlier AS d1_a_month_earlier,
+            d1.a_year_later AS d1_a_year_later,
+            d2.current_date_and_time AS d2_current_date_and_time,
+            d2.a_month_earlier AS d2_a_month_earlier,
+            d2.a_year_later AS d2_a_year_later
+        FROM
+            dates d1
+        	JOIN
+        	cte d2
         		ON d1.current_date_and_time = d2.current_date_and_time;
         """,
         engine=engine
