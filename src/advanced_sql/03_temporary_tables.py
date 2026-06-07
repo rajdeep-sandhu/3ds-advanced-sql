@@ -908,5 +908,24 @@ def _(dates_two, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Drop temporary table `dates_two`.
+    """)
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS dates_two;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
