@@ -554,7 +554,7 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Create a temporary table called `dates`, containing the current date and time, a month earlier and a ear later.
+    ### Create a temporary table called `dates`, containing the current date and time, a month earlier and a year later.
     """)
     return
 
@@ -794,6 +794,29 @@ def _(dates, engine: Engine):
     _df = mo.sql(
         f"""
         DROP TABLE IF EXISTS dates;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table called `dates_two`, containing the current date and time, two months earlier and two years later.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS dates_two AS
+        SELECT
+            NOW() AS current_date_and_time,
+        	NOW() - INTERVAL '2 MONTH' AS two_months_earlier,
+        	NOW() + INTERVAL '2 YEAR' AS two_years_later;
         """,
         engine=engine
     )
