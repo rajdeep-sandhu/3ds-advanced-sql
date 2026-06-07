@@ -1157,5 +1157,24 @@ def _(dept_no_4_mgr_salaries, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Drop temporary table `dept_no_4_mgr_salaries`.
+    """)
+    return
+
+
+@app.cell
+def _(dept_no_4_mgr_salaries, engine: Engine):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS dept_no_4_mgr_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
