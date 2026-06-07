@@ -834,5 +834,43 @@ def _(dates_two, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### `CROSS JOIN` `dates_two` with a CTE that returns the same columns.
+    """)
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '2 MONTH' AS two_months_earlier,
+            	NOW() + INTERVAL '2 YEAR' AS two_years_later
+            )
+
+        SELECT
+            d.current_date_and_time AS d_current_date_and_time,
+            d.two_months_earlier AS d_two_months_earlier,
+            d.two_years_later AS d_two_years_later,
+            c.current_date_and_time AS c_current_date_and_time,
+            c.two_months_earlier AS c_two_months_earlier,
+            c.two_years_later AS c_two_years_later
+        FROM
+            dates_two d
+        	CROSS JOIN
+        	cte c;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
