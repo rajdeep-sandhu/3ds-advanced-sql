@@ -1042,5 +1042,50 @@ def _(dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts signed by managers of the Production department that are higher than or equal to the overall company average salary value.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            )
+
+        SELECT
+            SUM(CASE
+            		WHEN s.salary >= avg_salary.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS salaries_above_avg,
+            COUNT(s.salary) AS total_salary_contracts
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	salaries s
+        		ON dm.emp_no = s.emp_no
+            INNER JOIN
+            departments d
+            	ON d.dept_no = dm.dept_no
+            		AND d.dept_name = 'Production'
+        	CROSS JOIN
+        	avg_salary;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
