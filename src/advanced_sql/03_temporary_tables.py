@@ -1143,5 +1143,19 @@ def _(departments, dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell
+def _(dept_no_4_mgr_salaries, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	*
+        FROM
+        	dept_no_4_mgr_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
