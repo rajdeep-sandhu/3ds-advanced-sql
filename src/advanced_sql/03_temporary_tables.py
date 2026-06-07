@@ -1090,7 +1090,7 @@ def _(departments, dept_manager, engine: Engine, salaries):
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
-    ### Create a temporary table called `dept_no_4_mgr_salaries` using two CTEs to get the highest salary values of Production managers that are lower than the overall company average.
+    ### Create a temporary table called `dept_no_4_mgr_salaries` using two CTEs to get the number of highest contract salaries of Production managers that are lower than the overall company average.
     """)
     return
 
