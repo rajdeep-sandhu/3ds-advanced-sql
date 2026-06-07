@@ -1,0 +1,1180 @@
+import marimo
+
+__generated_with = "0.22.4"
+app = marimo.App(width="full", app_title="03_temporary_tables")
+
+with app.setup:
+    import marimo as mo
+    import os
+    import psycopg
+    import sqlalchemy
+
+    from pathlib import Path
+    from sqlalchemy import Engine, Connection
+    from advanced_sql.postgres_factory import PostgresFactory
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    # 03. Temporary Tables
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Setup and Connection
+    """)
+    return
+
+
+@app.cell
+def _():
+    # Connect to postgres
+    factory: PostgresFactory = PostgresFactory()
+    engine: Engine = factory.create_engine()
+    connection: Connection = engine.connect()
+    return (engine,)
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT VERSION();
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM information_schema.tables;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create database from SQL file
+    """)
+    return
+
+
+@app.cell
+def _():
+    def reset_schema(engine: Engine) -> None:
+        """
+        Resets the public schema to a clean state.
+        Equivalent to recreating the database for the purpose of this tutorial.
+        """
+        with engine.begin() as conn:
+            conn.exec_driver_sql("DROP SCHEMA public CASCADE;")
+            conn.exec_driver_sql("CREATE SCHEMA public;")
+
+    def create_database(sql_file: Path, engine: Engine) -> None:
+        """Create database using the supplied SQL file"""
+        with open(sql_file, "r") as f:
+            sql: str = f.read()
+
+        with engine.raw_connection() as raw_conn:
+            # with raw_conn.cursor() as cur:
+            #     cur.execute(sql)
+            # raw_conn.commit()
+            cur = raw_conn.cursor()
+            cur.execute(sql)
+            cur.close()
+            raw_conn.commit()
+
+    return create_database, reset_schema
+
+
+@app.cell
+def _(create_database, engine: Engine, reset_schema):
+    sql_file: Path = Path(__file__).parent / "employees.sql"
+    reset_schema(engine=engine)
+    create_database(sql_file=sql_file, engine=engine)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Database Tables
+
+    - `salaries`: Salary contract values and their dates by employee.
+    - `dept_emp_latest_date`: Start and finish dates for by employee. `9999-01-01` indicates that the employee is active.
+    - `current_dept_emp`: Start and finish dates in current/latest department by employee number. `9999-01-01` indicates that the employee is active in the current department.
+    - `employees`: Employee details, including hire date.
+    - `dept_manager`: Employee numbers of managers with their current department, start and finish details. Includes past managers for each department.
+    - `departments`: Department name by department number.
+    - `dept_emp`: Dates when an employee was in a particular department.
+    - `titles`: Job titles with start end finish dates by employee number.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Introduction
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table with a list of highest contract salaries signed by all female employees who have worked in the company.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS f_highest_salaries AS
+        SELECT
+            e.emp_no,
+        	MAX(s.salary) AS f_highest_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.gender = 'F'
+        GROUP BY
+        	e.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Retrieve data from the temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+            f_highest_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Get data for `emp_no` 10010 and below from the `f_highest_salaries` temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+        	f_highest_salaries
+        WHERE
+        	emp_no <= 10010;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Drop the `f_highest_salaries` temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS f_highest_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Store the highest contract salaries of all male employees in a temporary table called `male_max_salaries`.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS male_max_salaries AS 
+        SELECT
+        	e.emp_no,
+            MAX(s.salary) AS max_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.gender = 'M'
+        GROUP BY
+        	e.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Retrieve data from the temporary table.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, male_max_salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+        	male_max_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Drop the `male_max_salaries` table.
+    """)
+    return
+
+
+@app.cell
+def _(male_max_salaries):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS male_max_salaries;
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Replace a temporary table with a CTE.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    **This section is specific to MySQL.**
+
+    - Although this notebook uses PostgreSQL, the original course is based on MySQL, which has a specific limitation where temporary tables are locked for use and can be invoked only once, otherwise an `ERROR 1137: Can't reopen table: temp_table` error occurs. The query processor cannot open multiple references to the same temporary table simultaneously within a single statement.
+    - Therefore, in MySQL, they cannot be used in **self joins, `UNION`** or **`UNION ALL`** operators.
+
+    **Workaround**
+
+    - Use a CTE to define the query that would have been used by the temporary table.
+
+    **Caveat**
+
+    - A temporary table is a snapshot of data at the moment that it was created. A CTE is re-evaluated each time a query is run. Therefore, **the result may be different if the source tables have changed in the interim.**
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table (`f_highest_salaries_limited`) with a list of highest contract salaries signed by all female employees who have worked in the company. Limit the list to 10 records.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS f_highest_salaries_limited AS
+        SELECT
+            e.emp_no,
+        	MAX(s.salary) AS f_highest_salary
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.gender = 'F'
+        GROUP BY
+        	e.emp_no
+        LIMIT 10;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with self joins in MySQL
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Self join which, in MySQL, would return `ERROR 1137: Can't reopen table`, but works on PostgreSQL.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        SELECT
+            t1.emp_no AS t1_emp_no,
+            t1.f_highest_salary AS t1_f_highest_salary,
+            t2.emp_no AS t2_emp_no,
+            t2.f_highest_salary AS t2_f_highest_salary
+        FROM
+            f_highest_salaries_limited t1
+            JOIN
+            f_highest_salaries_limited t2
+            	ON t1.emp_no = t2.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### **MySQL Workaround:** Self join using a CTE.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                e.emp_no,
+            	MAX(s.salary) AS f_highest_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'F'
+            GROUP BY
+            	e.emp_no
+            LIMIT 10
+            )
+
+        SELECT
+            t1.emp_no AS t1_emp_no,
+            t1.f_highest_salary AS t1_f_highest_salary,
+            t2.emp_no AS t2_emp_no,
+            t2.f_highest_salary AS t2_f_highest_salary
+        FROM
+            cte t1
+            JOIN
+            cte t2
+            	ON t1.emp_no = t2.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with `UNION` in MySQL
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### `UNION` which, in MySQL, would return `ERROR 1137: Can't reopen table`, but works on PostgreSQL.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        SELECT
+            *
+        FROM
+            f_highest_salaries_limited
+        UNION
+        SELECT
+            *
+        FROM
+            f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### **MySQL Workaround:** `UNION` using a CTE.
+    """)
+    return
+
+
+@app.cell
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                e.emp_no,
+            	MAX(s.salary) AS f_highest_salary
+            FROM
+            	employees e
+            	INNER JOIN
+            	salaries s
+            		ON e.emp_no = s.emp_no
+            			AND e.gender = 'F'
+            GROUP BY
+            	e.emp_no
+            LIMIT 10
+            )
+
+        SELECT
+        	*
+        FROM
+        	cte
+        UNION
+        SELECT
+        	*
+        FROM
+        	cte;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Drop table `f_highest_salaries_limited`.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, f_highest_salaries_limited):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS f_highest_salaries_limited;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Temporary Table vs CTE
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table called `dates`, containing the current date and time, a month earlier and a year later.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS dates AS
+        SELECT
+            NOW() AS current_date_and_time,
+        	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
+        	NOW() + INTERVAL '1 YEAR' AS a_year_later;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM dates;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with self joins.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Join `dates` with itself.
+
+    - Corresponding columns from both table aliases have the same `datetime` values.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+            d1.current_date_and_time AS d1_current_date_and_time,
+            d1.a_month_earlier AS d1_a_month_earlier,
+            d1.a_year_later AS d1_a_year_later,
+            d2.current_date_and_time AS d2_current_date_and_time,
+            d2.a_month_earlier AS d2_a_month_earlier,
+            d2.a_year_later AS d2_a_year_later
+        FROM
+            dates d1
+        	JOIN
+        	dates d2
+        		ON d1.current_date_and_time = d2.current_date_and_time;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Join `dates` with a CTE that returns the same columns.
+
+    - In this case, the join returns no results, as the CTE returns a different `datetime` to when the `dates` table was created.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
+            	NOW() + INTERVAL '1 YEAR' AS a_year_later
+            )
+
+        SELECT
+            d1.current_date_and_time AS d1_current_date_and_time,
+            d1.a_month_earlier AS d1_a_month_earlier,
+            d1.a_year_later AS d1_a_year_later,
+            d2.current_date_and_time AS d2_current_date_and_time,
+            d2.a_month_earlier AS d2_a_month_earlier,
+            d2.a_year_later AS d2_a_year_later
+        FROM
+            dates d1
+        	JOIN
+        	cte d2
+        		ON d1.current_date_and_time = d2.current_date_and_time;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### `CROSS JOIN` `dates` with a CTE that returns the same columns.
+
+    - This returns all the columns, but the CTE has `datetime` values different from the `dates` table.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
+            	NOW() + INTERVAL '1 YEAR' AS a_year_later
+            )
+
+        SELECT
+            d1.current_date_and_time AS d1_current_date_and_time,
+            d1.a_month_earlier AS d1_a_month_earlier,
+            d1.a_year_later AS d1_a_year_later,
+            d2.current_date_and_time AS d2_current_date_and_time,
+            d2.a_month_earlier AS d2_a_month_earlier,
+            d2.a_year_later AS d2_a_year_later
+        FROM
+            dates d1
+        	CROSS JOIN
+        	cte d2;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Temporary tables with `UNION`.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Return the `UNION` of `dates` with itself.
+
+    - Returns a single row, as the `datetime` values of the `UNION` rows are the same.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	*
+        FROM
+        	dates
+        UNION
+        SELECT
+        	*
+        FROM
+        	dates;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Return the `UNION` of `dates` with a CTE that returns the same columns.
+
+    - This returns 2 rows as the CTE `datetime` values are different from the `dates` table.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '1 MONTH' AS a_month_earlier,
+            	NOW() + INTERVAL '1 YEAR' AS a_year_later
+            )
+
+        SELECT
+        	*
+        FROM
+        	dates
+        UNION
+        SELECT
+        	*
+        FROM
+        	cte;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Drop temporary table `dates`.
+    """)
+    return
+
+
+@app.cell
+def _(dates, engine: Engine):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS dates;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table called `dates_two`, containing the current date and time, two months earlier and two years later.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS dates_two AS
+        SELECT
+            NOW() AS current_date_and_time,
+        	NOW() - INTERVAL '2 MONTH' AS two_months_earlier,
+        	NOW() + INTERVAL '2 YEAR' AS two_years_later;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM dates_two;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### `CROSS JOIN` `dates_two` with a CTE that returns the same columns.
+    """)
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '2 MONTH' AS two_months_earlier,
+            	NOW() + INTERVAL '2 YEAR' AS two_years_later
+            )
+
+        SELECT
+            d.current_date_and_time AS d_current_date_and_time,
+            d.two_months_earlier AS d_two_months_earlier,
+            d.two_years_later AS d_two_years_later,
+            c.current_date_and_time AS c_current_date_and_time,
+            c.two_months_earlier AS c_two_months_earlier,
+            c.two_years_later AS c_two_years_later
+        FROM
+            dates_two d
+        	CROSS JOIN
+        	cte c;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Return the `UNION` of `dates_two` with a CTE that returns the same columns.
+    """)
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '2 MONTH' AS two_months_earlier,
+            	NOW() + INTERVAL '2 YEAR' AS two_years_later
+            )
+
+        SELECT
+        	*
+        FROM
+        	dates_two
+        UNION
+        SELECT
+        	*
+        FROM
+        	cte;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Drop temporary table `dates_two`.
+    """)
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS dates_two;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## Practice Test
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the second-lowest contract salary of every employee who has ever worked at the company.
+    """)
+    return
+
+
+@app.cell
+def _(engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	a.emp_no,
+            a.salary AS min_salary
+        FROM
+        	(
+            SELECT
+            	emp_no,
+            	salary,
+            	ROW_NUMBER() OVER w AS row_num
+            FROM
+            	salaries
+            WINDOW w AS (PARTITION BY emp_no ORDER BY salary)
+            ) a
+        WHERE
+        	a.row_num = 2
+        ORDER BY
+            a.emp_no;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank all contract salaries for employee `10560` in descending order.
+
+    - Use the same rank for identical salary values.
+    - Do not skip ranks.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	e.emp_no,
+            s.salary,
+            DENSE_RANK() OVER(PARTITION BY s.emp_no ORDER BY s.salary DESC)
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.emp_no = 10560;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Use window functions to obtain the following columns with data for all managers, in ascending order by the `salary` column:
+
+    - Employee number.
+    - Current contract salary value.
+    - Contract salary value before the current one.
+    - Contract salary value after the current one.
+    - Difference between the employee's current salary and their previous salary.
+    - Difference between their next salary and their current salary.
+
+    Q. What is the difference between the next and current salary in the second record obtained for employee `110085`?<br>
+    A. `195`
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            dm.emp_no,
+            s.salary,
+            LAG(s.salary, 1) OVER w AS prev_salary,
+            LEAD(s.salary, 1) OVER w AS next_salary,
+            (s.salary - LAG(s.salary, 1) OVER w) AS curr_prev_diff,
+            (LEAD(s.salary, 1) OVER w - s.salary) AS next_curr_diff
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	salaries s
+        		ON dm.emp_no = s.emp_no
+        WINDOW w AS (PARTITION BY s.emp_no ORDER BY s.salary ASC);
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Get the number of salary contracts signed by managers of the Production department that are higher than or equal to the overall company average salary value.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            )
+
+        SELECT
+            SUM(CASE
+            		WHEN s.salary >= avg_salary.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS salaries_above_avg,
+            COUNT(s.salary) AS total_salary_contracts
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	salaries s
+        		ON dm.emp_no = s.emp_no
+            INNER JOIN
+            departments d
+            	ON d.dept_no = dm.dept_no
+            		AND d.dept_name = 'Production'
+        	CROSS JOIN
+        	avg_salary;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table called `dept_no_4_mgr_salaries` using two CTEs to get the number of highest contract salaries of Production managers that are lower than the overall company average.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS dept_no_4_mgr_salaries AS
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            ),
+
+            max_salary AS
+            (
+            SELECT
+                dm.emp_no,
+                MAX(s.salary) AS max_salary
+            FROM
+                salaries s
+            	INNER JOIN
+            	dept_manager dm
+            		ON s.emp_no = dm.emp_no
+            	INNER JOIN
+                departments d
+                	ON d.dept_no = dm.dept_no
+                		AND d.dept_name = 'Production'
+            GROUP BY
+        	dm.emp_no
+            )
+
+        SELECT
+            SUM(CASE
+            		WHEN ms.max_salary < avg_salary.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS highest_salaries_below_avg
+        FROM
+        	max_salary ms
+        	CROSS JOIN
+        	avg_salary;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell
+def _(dept_no_4_mgr_salaries, engine: Engine):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	*
+        FROM
+        	dept_no_4_mgr_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Drop temporary table `dept_no_4_mgr_salaries`.
+    """)
+    return
+
+
+@app.cell
+def _(dept_no_4_mgr_salaries, engine: Engine):
+    _df = mo.sql(
+        f"""
+        DROP TABLE IF EXISTS dept_no_4_mgr_salaries;
+        """,
+        engine=engine
+    )
+    return
+
+
+if __name__ == "__main__":
+    app.run()
