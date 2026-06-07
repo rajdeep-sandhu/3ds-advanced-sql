@@ -872,5 +872,41 @@ def _(dates_two, engine: Engine):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    #### Return the `UNION` of `dates_two` with a CTE that returns the same columns.
+    """)
+    return
+
+
+@app.cell
+def _(dates_two, engine: Engine):
+    _df = mo.sql(
+        f"""
+        WITH
+            cte AS
+            (
+            SELECT
+                NOW() AS current_date_and_time,
+            	NOW() - INTERVAL '2 MONTH' AS two_months_earlier,
+            	NOW() + INTERVAL '2 YEAR' AS two_years_later
+            )
+
+        SELECT
+        	*
+        FROM
+        	dates_two
+        UNION
+        SELECT
+        	*
+        FROM
+        	cte;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
