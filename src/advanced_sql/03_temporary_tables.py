@@ -1087,5 +1087,61 @@ def _(departments, dept_manager, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Create a temporary table called `dept_no_4_mgr_salaries` using two CTEs to get the highest salary values of Production managers that are lower than the overall company average.
+    """)
+    return
+
+
+@app.cell
+def _(departments, dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        CREATE TEMPORARY TABLE IF NOT EXISTS dept_no_4_mgr_salaries AS
+        WITH
+            avg_salary AS
+            (
+            SELECT
+            	AVG(salary) AS avg_salary
+            FROM
+            	salaries
+            ),
+
+            max_salary AS
+            (
+            SELECT
+                dm.emp_no,
+                MAX(s.salary) AS max_salary
+            FROM
+                salaries s
+            	INNER JOIN
+            	dept_manager dm
+            		ON s.emp_no = dm.emp_no
+            	INNER JOIN
+                departments d
+                	ON d.dept_no = dm.dept_no
+                		AND d.dept_name = 'Production'
+            GROUP BY
+        	dm.emp_no
+            )
+
+        SELECT
+            SUM(CASE
+            		WHEN ms.max_salary < avg_salary.avg_salary
+            		THEN 1 ELSE 0
+            	END
+            ) AS highest_salaries_below_avg
+        FROM
+        	max_salary ms
+        	CROSS JOIN
+        	avg_salary;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
