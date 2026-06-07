@@ -1001,5 +1001,46 @@ def _(employees, engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Use window functions to obtain the following columns with data for all managers, in ascending order by the `salary` column:
+
+    - Employee number.
+    - Current contract salary value.
+    - Contract salary value before the current one.
+    - Contract salary value after the current one.
+    - Difference between the employee's current salary and their previous salary.
+    - Difference between their next salary and their current salary.
+
+    Q. What is the difference between the next and current salary in the second record obtained for employee `110085`?<br>
+    A. `195`
+    """)
+    return
+
+
+@app.cell
+def _(dept_manager, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+            dm.emp_no,
+            s.salary,
+            LAG(s.salary, 1) OVER w AS prev_salary,
+            LEAD(s.salary, 1) OVER w AS next_salary,
+            (s.salary - LAG(s.salary, 1) OVER w) AS curr_prev_diff,
+            (LEAD(s.salary, 1) OVER w - s.salary) AS next_curr_diff
+        FROM
+        	dept_manager dm
+        	INNER JOIN
+        	salaries s
+        		ON dm.emp_no = s.emp_no
+        WINDOW w AS (PARTITION BY s.emp_no ORDER BY s.salary ASC);
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
