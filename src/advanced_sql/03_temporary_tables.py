@@ -970,5 +970,36 @@ def _(engine: Engine, salaries):
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Rank all contract salaries for employee `10560` in descending order.
+
+    - Use the same rank for identical salary values.
+    - Do not skip ranks.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(employees, engine: Engine, salaries):
+    _df = mo.sql(
+        f"""
+        SELECT
+        	e.emp_no,
+            s.salary,
+            DENSE_RANK() OVER(PARTITION BY s.emp_no ORDER BY s.salary DESC)
+        FROM
+        	employees e
+        	INNER JOIN
+        	salaries s
+        		ON e.emp_no = s.emp_no
+        			AND e.emp_no = 10560;
+        """,
+        engine=engine
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
