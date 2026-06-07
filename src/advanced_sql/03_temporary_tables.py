@@ -286,11 +286,12 @@ def _():
 
 
 @app.cell
-def _(male_max_salaries):
+def _(engine: Engine, male_max_salaries):
     _df = mo.sql(
         f"""
         DROP TABLE IF EXISTS male_max_salaries;
-        """
+        """,
+        engine=engine
     )
     return
 
